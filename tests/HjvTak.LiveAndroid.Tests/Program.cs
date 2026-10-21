@@ -89,6 +89,23 @@ internal static class Program
         Test("missing executable fails before launching", () => {
             using (var session = new ScrcpySession()) { Throws(() => session.Start("missing.exe",null)); Equal(IntPtr.Zero,session.Window); }
         });
+        Test("invalid executable launch fails cleanly and can restart", () => {
+            string badExe = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "android-live-test-" + Guid.NewGuid().ToString("N") + ".exe");
+            System.IO.File.WriteAllText(badExe,"not a Windows executable");
+            try
+            {
+                using (var session = new ScrcpySession())
+                {
+                    bool failedToStart = false;
+                    try { session.Start(badExe,null); } catch (System.ComponentModel.Win32Exception) { failedToStart = true; }
+                    Check(failedToStart); Equal(DeviceState.Faulted,session.Status.State); Equal(IntPtr.Zero,session.Window);
+                    session.Stop();
+                    session.Start(typeof(Program).Assembly.Location,"test");
+                    Await(() => { session.Poll(); return session.Status.State == DeviceState.Running; });
+                }
+            }
+            finally { System.IO.File.Delete(badExe); }
+        });
         Console.WriteLine("Tests: " + passed + " passed, " + failed + " failed.");
         return failed == 0 ? 0 : 1;
     }

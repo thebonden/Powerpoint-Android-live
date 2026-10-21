@@ -15,7 +15,7 @@ namespace HjvTak.LiveAndroid
         private string log = "";
         internal SessionState Status { get; } = new SessionState();
         internal string Diagnostics { get { lock (logLock) return log; } }
-        internal IntPtr Window => process != null && NativeWindow.IsOwnedBy(window, process.Id) ? window : IntPtr.Zero;
+        internal IntPtr Window => window != IntPtr.Zero && process != null && NativeWindow.IsOwnedBy(window, process.Id) ? window : IntPtr.Zero;
 
         internal void Start(string executable, string serial)
         {

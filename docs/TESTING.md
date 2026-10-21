@@ -3,7 +3,7 @@
 ## Recorded local evidence (2026-10-21)
 
 - Full VSTO **Debug and Release builds succeeded** on Windows with Visual Studio 18/2026, .NET Framework 4.8. The DLL, signed application manifest and signed deployment `.vsto` were generated.
-- **13 automated test groups passed**, including 128 visibility-input combinations, Windows command-line argument round trips, geometry and process/window integration using a simulated scrcpy executable.
+- **14 automated test groups passed**, including 128 visibility-input combinations, Windows command-line argument round trips, geometry and process/window integration using a simulated scrcpy executable.
 - Actual installed PowerPoint COM smoke attempt: marker insertion remained idempotent, and the simulated feed stayed hidden in editing view. **Visible slideshow checks were blocked because Windows denied foreground activation from the automation environment.** This is not a full Office smoke pass.
 - Ribbon loading through the VSTO runtime, real Android/scrcpy playback, mixed-DPI/projector/Presenter View, exports/capture and full acceptance are **not yet verified**. Compilation and fake-device tests do not establish these behaviors.
 
@@ -20,7 +20,7 @@ GitHub Actions runs the complete Release build and automated tests on `windows-2
 - Video-only launch options and no implicit device choice when a serial is supplied.
 - Startup timeout, stopped/starting/running/faulted transitions, disconnect, window loss and explicit restart.
 - Real child process with an offscreen WinForms window: exact process ownership, hide, stop, repeated stop and restart.
-- Child process failure/exit code and diagnostic capture; missing executable handling.
+- Child process failure/exit code and diagnostic capture; missing executable handling; invalid Windows executable launch failure and recovery.
 
 The fake scrcpy window has a 15-second dead-man timer. Tests never require a phone and never kill the shared ADB server or unrelated processes.
 
