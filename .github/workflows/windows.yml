@@ -1,0 +1,22 @@
+name: Windows build and tests
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  vsto:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build VSTO manifests and run Windows tests
+        shell: pwsh
+        run: ./scripts/build.ps1 -Configuration Release
+      - name: Upload development build (no signing key)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-Live-0.0.002-development
+          path: src/HjvTak.LiveAndroid/bin/Release/
+          if-no-files-found: error
+          retention-days: 14

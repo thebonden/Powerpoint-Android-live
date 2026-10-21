@@ -2,134 +2,208 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Threading;
+using System.Windows.Forms;
+using HjvTak.LiveAndroid.Core;
+using Office = Microsoft.Office.Core;
 using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 
 namespace HjvTak.LiveAndroid
 {
-    /// <summary>
-    /// Early prototype. Places a scrcpy native video window over a named PowerPoint
-    /// rectangle. This is NOT a video object embedded into a PPTX.
-    /// Must be invoked from the PowerPoint main STA thread.
-    /// </summary>
+    /// <summary>A slide-anchored external window, never native PowerPoint media. All COM calls run on the Office STA.</summary>
     public sealed class LiveAndroidController : IDisposable
     {
-        public const string Version = "0.0.001";
+        public const string Version = "0.0.002";
         public const string AnchorName = "HJVTAK_ANDROID_LIVE";
         private readonly PowerPoint.Application app;
-        private readonly string scrcpyPath;
-        private Process scrcpy;
-        private int sequence;
+        private readonly ScrcpySession session = new ScrcpySession();
+        private readonly Timer timer = new Timer { Interval = 100 };
 
-        public LiveAndroidController(PowerPoint.Application application, string scrcpyExecutablePath)
+        private readonly int uiThread = System.Threading.Thread.CurrentThread.ManagedThreadId;
+        private bool enabled = true, disposed;
+        private DateTime resumeAfter;
+        private bool transitionPending;
+        private string alignment = "Start Android, then run a slideshow containing an overlay marker.";
+        public event EventHandler StatusChanged;
+        public string Status => session.Status.Detail + "\n" + alignment;
+        public string Diagnostics => session.Diagnostics;
+        public bool IsActive => session.Status.State == DeviceState.Starting || session.Status.State == DeviceState.Running;
+        public bool OverlayEnabled => enabled;
+
+        public LiveAndroidController(PowerPoint.Application application)
         {
             app = application ?? throw new ArgumentNullException(nameof(application));
-            scrcpyPath = scrcpyExecutablePath ?? throw new ArgumentNullException(nameof(scrcpyExecutablePath));
+            app.SlideShowBegin += OnShowChanged;
+            app.SlideShowNextSlide += OnShowChanged;
+            app.SlideShowEnd += OnShowEnd;
+            app.PresentationClose += OnPresentationClose;
+            timer.Tick += OnTick;
+            timer.Start();
         }
-
+        public void StartDevice(string executable, string serial)
+        {
+            EnsureThread();
+            session.Start(executable, serial);
+            enabled = true;
+            Changed();
+        }
+        public void StopDevice() { EnsureThread(); session.Stop(); Changed(); }
+        public void ToggleOverlay() { EnsureThread(); enabled = !enabled; if (!enabled) session.Hide(); Changed(); }
         public void AddAnchorToCurrentSlide()
         {
-            var slide = app.ActiveWindow.View.Slide as PowerPoint.Slide;
-            if (slide == null) throw new InvalidOperationException("Open a slide in normal editing view.");
-            float w = (float)app.ActivePresentation.PageSetup.SlideWidth;
-            float h = (float)app.ActivePresentation.PageSetup.SlideHeight;
-            var shape = slide.Shapes.AddShape(Microsoft.Office.Core.MsoAutoShapeType.msoShapeRectangle,
-                w * .62f, h * .12f, w * .29f, h * .72f);
-            shape.Name = AnchorName;
-            shape.TextFrame.TextRange.Text = "Android live – " + Version + "\n(visible in slideshow)";
-        }
-
-        public void StartDevice(string adbSerial = null)
-        {
-            StopDevice();
-            var title = "HJVTAK-LIVE-" + Process.GetCurrentProcess().Id + "-" +
-                        Interlocked.Increment(ref sequence);
-            WindowTitle = title;
-            var args = "--window-title=" + Quote(title);
-            if (!string.IsNullOrWhiteSpace(adbSerial)) args += " --serial=" + Quote(adbSerial);
-            scrcpy = Process.Start(new ProcessStartInfo(scrcpyPath, args)
+            EnsureThread();
+            PowerPoint.DocumentWindow document = null;
+            PowerPoint.View view = null;
+            PowerPoint.Slide slide = null;
+            PowerPoint.Presentation presentation = null;
+            PowerPoint.PageSetup page = null;
+            PowerPoint.Shapes shapes = null;
+            PowerPoint.Shape shape = null;
+            PowerPoint.TextFrame text = null;
+            PowerPoint.TextRange range = null;
+            try
             {
-                UseShellExecute = false,
-                CreateNoWindow = true
-            });
+                document = app.ActiveWindow;
+                if (document == null || (document.ViewType != PowerPoint.PpViewType.ppViewNormal &&
+                    document.ViewType != PowerPoint.PpViewType.ppViewSlide))
+                    throw new InvalidOperationException("Open a slide in Normal editing view first.");
+                view = document.View;
+                slide = view.Slide as PowerPoint.Slide;
+                if (slide == null) throw new InvalidOperationException("Select a slide first.");
+                shapes = slide.Shapes;
+                shape = FindAnchor(shapes);
+                if (shape != null) { shape.Select(); return; }
+                presentation = document.Presentation;
+                page = presentation.PageSetup;
+                shape = shapes.AddShape(Office.MsoAutoShapeType.msoShapeRectangle,
+                    page.SlideWidth * .62f, page.SlideHeight * .12f, page.SlideWidth * .29f, page.SlideHeight * .72f);
+                shape.Name = AnchorName;
+                shape.AlternativeText = "Android live external window overlay. Not embedded video; not included in exports.";
+                text = shape.TextFrame;
+                range = text.TextRange;
+                range.Text = "Android live overlay\n0.0.002\nNot embedded video";
+                shape.Select();
+            }
+            finally { Release(range); Release(text); Release(shape); Release(shapes); Release(page); Release(presentation); Release(slide); Release(view); Release(document); }
         }
-
-        public string WindowTitle { get; private set; }
-
-        public void AlignToSlideShow()
+        private void OnShowChanged(PowerPoint.SlideShowWindow show)
         {
-            var show = app.SlideShowWindows.Count > 0 ? app.SlideShowWindows[1] : null;
-            if (show == null) { HideVideo(); return; }
-            PowerPoint.Slide slide = show.View.Slide;
+            // NextSlide fires before the transition. Do not flash the old slide's video over the transition.
+            session.Hide();
+            resumeAfter = DateTime.UtcNow.AddMilliseconds(250);
+            transitionPending = true;
+        }
+        private void OnShowEnd(PowerPoint.Presentation presentation) { session.Hide(); NativeWindow.DetachOwner(session.Window); alignment = "Slideshow ended; overlay hidden."; }
+        private void OnPresentationClose(PowerPoint.Presentation presentation) { session.Hide(); NativeWindow.DetachOwner(session.Window); }
+        private void OnTick(object sender, EventArgs args)
+        {
+            if (disposed) return;
+            string previous = Status;
+            try { session.Poll(); Align(); }
+            catch (COMException) { session.Hide(); alignment = "PowerPoint is busy; overlay hidden until it is ready."; }
+            catch (InvalidComObjectException) { session.Hide(); alignment = "Slideshow window closed."; }
+            catch (Exception ex) { session.Hide(); alignment = "Overlay hidden: " + ex.Message; }
+            if (Status != previous) Changed();
+        }
+        private void Align()
+        {
+            if (session.Status.State != DeviceState.Running || !enabled || DateTime.UtcNow < resumeAfter)
+            { session.Hide(); return; }
+            PowerPoint.SlideShowWindows shows = null;
+            PowerPoint.SlideShowWindow show = null;
+            PowerPoint.SlideShowView view = null;
+            PowerPoint.Slide slide = null;
+            PowerPoint.Shapes shapes = null;
             PowerPoint.Shape anchor = null;
-            foreach (PowerPoint.Shape s in slide.Shapes)
+            PowerPoint.Presentation presentation = null;
+            PowerPoint.PageSetup page = null;
+            try
             {
-                if (s.Name == AnchorName) { anchor = s; break; }
+                shows = app.SlideShowWindows;
+                if (shows.Count != 1)
+                {
+                    session.Hide();
+                    alignment = shows.Count == 0 ? "No slideshow; overlay hidden." : "Multiple slideshows; overlay hidden. Run one show at a time.";
+                    return;
+                }
+                show = shows[1];
+                var hwnd = new IntPtr(show.HWND);
+                view = show.View;
+                bool normal = view.State == PowerPoint.PpSlideShowState.ppSlideShowRunning;
+                bool visible = NativeWindow.IsWindowVisible(hwnd) && !NativeWindow.IsIconic(hwnd);
+                bool foreground = NativeWindow.IsHostForeground(hwnd);
+                if (!normal || !visible || !foreground)
+                { session.Hide(); alignment = !normal ? "Overlay hidden: slideshow is blanked or paused." : !visible ? "Overlay hidden: slideshow is minimized or not visible." : "Overlay hidden: PowerPoint is in the background."; return; }
+                slide = view.Slide;
+                if (transitionPending)
+                {
+                    PowerPoint.SlideShowTransition transition = null;
+                    try
+                    {
+                        transition = slide.SlideShowTransition;
+                        double duration = transition.EntryEffect == PowerPoint.PpEntryEffect.ppEffectNone ? 0 : transition.Duration;
+                        resumeAfter = DateTime.UtcNow.AddSeconds(Math.Max(0, Math.Min(60, duration)));
+                        transitionPending = false;
+                        session.Hide();
+                        return;
+                    }
+                    finally { Release(transition); }
+                }
+                shapes = slide.Shapes;
+                anchor = FindAnchor(shapes);
+                bool valid = anchor != null && anchor.Visible == Office.MsoTriState.msoTrue &&
+                    Math.Abs(anchor.Rotation) < 0.01 && anchor.Type == Office.MsoShapeType.msoAutoShape &&
+                    anchor.AutoShapeType == Office.MsoAutoShapeType.msoShapeRectangle;
+                if (!OverlayPolicy.ShouldShow(true, enabled, true, normal, visible, foreground, valid))
+                { session.Hide(); alignment = "No visible, unrotated rectangular marker on this slide."; return; }
+                presentation = show.Presentation; // Never ActivePresentation: Presenter View can activate a different deck.
+                page = presentation.PageSetup;
+                Rectangle client, bounds;
+                using (new NativeWindow.DpiScope())
+                {
+                    if (!NativeWindow.TryGetClient(hwnd, out client) ||
+                        !OverlayGeometry.TryMap(client, page.SlideWidth, page.SlideHeight,
+                            anchor.Left, anchor.Top, anchor.Width, anchor.Height, out bounds))
+                    { session.Hide(); alignment = "Keep the marker fully inside the slide."; return; }
+                    if (!NativeWindow.Place(session.Window, hwnd, bounds))
+                    { session.Hide(); alignment = "Windows could not position the overlay."; return; }
+                }
+                alignment = "Overlay visible (external window; not embedded video).";
             }
-            if (anchor == null) { HideVideo(); return; }
-
-            var videoHwnd = FindWindow(null, WindowTitle);
-            if (videoHwnd == IntPtr.Zero) return;
-            IntPtr showHwnd = new IntPtr(show.HWND);
-            if (!GetClientRect(showHwnd, out RECT client)) return;
-            POINT p = new POINT { X = 0, Y = 0 };
-            if (!ClientToScreen(showHwnd, ref p)) return;
-
-            // Fit the authored slide inside slideshow client area, including letterboxing.
-            float sw = (float)app.ActivePresentation.PageSetup.SlideWidth;
-            float sh = (float)app.ActivePresentation.PageSetup.SlideHeight;
-            double clientW = client.Right - client.Left;
-            double clientH = client.Bottom - client.Top;
-            double scale = Math.Min(clientW / sw, clientH / sh);
-            double offX = (clientW - sw * scale) / 2;
-            double offY = (clientH - sh * scale) / 2;
-            int x = (int)Math.Round(p.X + offX + anchor.Left * scale);
-            int y = (int)Math.Round(p.Y + offY + anchor.Top * scale);
-            int w = Math.Max(1, (int)Math.Round(anchor.Width * scale));
-            int h = Math.Max(1, (int)Math.Round(anchor.Height * scale));
-
-            // Place a borderless-looking native window over the slide anchor.
-            // Do not set TOPMOST: keep PowerPoint and the video in user-controlled z-order.
-            SetWindowPos(videoHwnd, IntPtr.Zero, x, y, w, h,
-                SWP_NOZORDER | SWP_SHOWWINDOW);
+            finally { Release(page); Release(presentation); Release(anchor); Release(shapes); Release(slide); Release(view); Release(show); Release(shows); }
         }
-
-        public void HideVideo()
+        private static PowerPoint.Shape FindAnchor(PowerPoint.Shapes shapes)
         {
-            if (WindowTitle == null) return;
-            var hwnd = FindWindow(null, WindowTitle);
-            if (hwnd != IntPtr.Zero) ShowWindow(hwnd, 0);
-        }
-
-        public void StopDevice()
-        {
-            if (scrcpy != null)
+            for (int i = 1; i <= shapes.Count; i++)
             {
-                try { if (!scrcpy.HasExited) { scrcpy.CloseMainWindow(); if (!scrcpy.WaitForExit(800)) scrcpy.Kill(); } }
-                catch (InvalidOperationException) { }
-                finally { scrcpy.Dispose(); scrcpy = null; WindowTitle = null; }
+                var shape = shapes[i];
+                if (shape.Name == AnchorName) return shape;
+                Release(shape);
             }
+            return null;
         }
-
-        public void Dispose() { StopDevice(); }
-
-        private static string Quote(string s) => "\"" + s.Replace("\"", "\\\"") + "\"";
-        private const uint SWP_NOZORDER = 0x0004;
-        private const uint SWP_SHOWWINDOW = 0x0040;
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        private static extern IntPtr FindWindow(string className, string title);
-        [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool GetClientRect(IntPtr hwnd, out RECT rect);
-        [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool ClientToScreen(IntPtr hwnd, ref POINT point);
-        [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool SetWindowPos(IntPtr hwnd, IntPtr insertAfter, int x, int y,
-            int cx, int cy, uint flags);
-        [DllImport("user32.dll")] [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool ShowWindow(IntPtr hwnd, int command);
-        [StructLayout(LayoutKind.Sequential)]
-        private struct RECT { public int Left, Top, Right, Bottom; }
-        [StructLayout(LayoutKind.Sequential)]
-        private struct POINT { public int X, Y; }
+        private static void Release(object value)
+        { if (value != null && Marshal.IsComObject(value)) Marshal.ReleaseComObject(value); }
+        private void Changed() { StatusChanged?.Invoke(this, EventArgs.Empty); }
+        private void EnsureThread()
+        {
+            if (disposed) throw new ObjectDisposedException(nameof(LiveAndroidController));
+            if (System.Threading.Thread.CurrentThread.ManagedThreadId != uiThread)
+                throw new InvalidOperationException("Call the controller on PowerPoint's UI thread.");
+        }
+        public void Dispose()
+        {
+            if (disposed) return;
+            EnsureThread();
+            disposed = true;
+            timer.Stop(); timer.Tick -= OnTick; timer.Dispose();
+            try
+            {
+                app.SlideShowBegin -= OnShowChanged;
+                app.SlideShowNextSlide -= OnShowChanged;
+                app.SlideShowEnd -= OnShowEnd;
+                app.PresentationClose -= OnPresentationClose;
+            }
+            finally { session.Dispose(); }
+        }
     }
 }
