@@ -27,7 +27,8 @@ namespace HjvTak.LiveAndroid
                     string executable = path.Text.Trim();
                     if (!Path.IsPathRooted(executable) || !File.Exists(executable) || !string.Equals(Path.GetFileName(executable), "scrcpy.exe", StringComparison.OrdinalIgnoreCase))
                         throw new InvalidOperationException("Select an existing scrcpy.exe from the official Windows distribution.");
-                    ScrcpyArguments.Quote(serial.Text);
+                    if (!string.IsNullOrWhiteSpace(serial.Text) && !WifiEndpoint.IsValid(serial.Text.Trim()))
+                        throw new InvalidOperationException("Enter a Wi-Fi IPv4:port connection address, or leave blank and use QR pairing.");
                     settings.ScrcpyPath = executable; settings.Serial = serial.Text.Trim(); settings.Save();
                     DialogResult = DialogResult.OK; Close();
                 }
@@ -36,8 +37,8 @@ namespace HjvTak.LiveAndroid
             var cancel = new Button { Left = 495, Top = 200, Width = 90, Text = "Cancel", DialogResult = DialogResult.Cancel };
             Controls.AddRange(new Control[] {
                 new Label { Left = 16, Top = 16, Width = 550, Text = "Official scrcpy.exe (keep the distribution's adb and support files beside it)" }, path, browse,
-                new Label { Left = 16, Top = 81, Width = 550, Text = "ADB serial (optional with one connected device; required with multiple devices)" }, serial,
-                new Label { Left = 16, Top = 145, Width = 565, Height = 46, Text = "Video-only overlay. Audio and phone control are disabled.\nAuthorize USB debugging on your phone, then use Start Android." }, save, cancel });
+                new Label { Left = 16, Top = 81, Width = 550, Text = "Wi-Fi connection address (optional; QR pairing fills this automatically)" }, serial,
+                new Label { Left = 16, Top = 145, Width = 565, Height = 46, Text = "Video-only overlay. Audio and phone control are disabled.\nUse Connect via Wi-Fi / QR; no USB or OBS Studio is needed." }, save, cancel });
             AcceptButton = save; CancelButton = cancel;
         }
     }

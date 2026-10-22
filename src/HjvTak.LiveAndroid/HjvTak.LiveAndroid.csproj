@@ -122,9 +122,9 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <PropertyGroup>
-    <FriendlyName>HJVTAK Android Live 0.0.002</FriendlyName>
+    <FriendlyName>HJVTAK Android Live 0.0.003</FriendlyName>
     <Description>Android live window overlay for PowerPoint</Description>
-    <ApplicationVersion>0.0.2.0</ApplicationVersion>
+    <ApplicationVersion>0.0.3.0</ApplicationVersion>
     <GenerateManifests>true</GenerateManifests>
     <LangVersion>7.3</LangVersion>
     <SignManifests>true</SignManifests>
@@ -165,4 +165,26 @@
   </ItemGroup>
   <Target Name="RegisterOfficeAddin" />
   <Target Name="UnregisterOfficeAddin" />
+  <ItemGroup>
+    <Compile Include="WifiDialog.cs" />
+    <Compile Include="..\HjvTak.LiveAndroid.Core\WifiEndpoint.cs" />
+    <Compile Include="..\HjvTak.LiveAndroid.Core\LocalCommand.cs" />
+    <Compile Include="..\HjvTak.LiveAndroid.Core\WifiConnector.cs" />
+    <Content Include="..\..\artifacts\wifi-qr\Android-WiFi-QR.exe">
+      <Link>tools\Android-WiFi-QR.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\native\WifiQr\LICENSE">
+      <Link>tools\licenses\WiFiQr-GPL-2.0.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\native\WifiQr\NOTICE.md">
+      <Link>tools\licenses\WiFiQr-NOTICE.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\native\WifiQr\vendor\qrcodegen\LICENSE.txt">
+      <Link>tools\licenses\QR-Code-generator-MIT.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

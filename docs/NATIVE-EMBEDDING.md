@@ -18,16 +18,13 @@ A normal PowerPoint rectangle records placement. A separate scrcpy HWND is moved
 
 The absence of a decoded-frame API in the examined PowerPoint media method is **not proof that all native live rendering is impossible**. Cameo is an existing native camera mechanism. The earlier blanket statement has been narrowed accordingly.
 
-## Proposed proof of concept
+## Standalone direction (updated 2026-10-22)
 
-1. On a Windows test PC with a Cameo-capable PowerPoint build, run ordinary scrcpy independently of this add-in. This add-in hides its window outside slideshow alignment, which is unsuitable as a stable capture source for this experiment.
-2. Capture the scrcpy window in OBS; configure the virtual camera to output that source/scene; start the virtual camera.
-3. Insert Cameo, select the OBS virtual camera, and compare visual placement with the overlay build.
-4. Verify one and two displays, Presenter View, transitions, portrait/landscape rotation, 30-minute operation, disconnect/reconnect and camera-permission prompts.
-5. Measure end-to-end latency and CPU/GPU load; verify PowerPoint's recording/export behavior separately. A live camera object in a PPTX does not store a permanent copy of future video. Do not promise exported live video without a recording test.
-6. Establish whether the required insertion/device-selection actions have supported automation on the target PowerPoint version; do not claim an available VSTO frame-injection API from UI support alone.
+The product requirement is now explicit: **PowerPoint must work without OBS Studio**. The earlier OBS Virtual Camera idea is background feasibility evidence only; it is not a deployment dependency or the selected product approach.
 
-Acceptance evidence should include PowerPoint version/channel, Android and scrcpy versions, camera source, recording/export examples and measurements. No driver or virtual camera is installed by 0.0.002. scrcpy's documented direct V4L2 webcam output is Linux-only, so it is not a ready-made Windows solution.
+0.0.003 reuses only the independent Wi-Fi pairing logic and keeps the external scrcpy overlay. A future native-rendering proof of concept must supply a Windows camera source directly from Android/scrcpy (or another independent Windows rendering component) and then test Cameo on the target PowerPoint build. It must not require the OBS process, plugin or virtual camera.
+
+That separate project must validate camera-source registration, supported PowerPoint automation, formatting/transitions, Presenter View, mixed DPI, rotation, latency, permissions, prolonged use and recording/export behavior. A live camera object in a PPTX does not itself store a permanent recording. No custom camera driver or native slide-frame injection is implemented in 0.0.003.
 
 ## Primary sources
 

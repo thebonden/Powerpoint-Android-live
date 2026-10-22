@@ -2,6 +2,7 @@
 [CmdletBinding()]
 param([ValidateSet('Debug','Release')][string]$Configuration = 'Debug', [switch]$SkipTests)
 $ErrorActionPreference = 'Stop'
+& (Join-Path $PSScriptRoot 'build-wifi-helper.ps1') -RunTests:(!$SkipTests)
 $repo = Split-Path $PSScriptRoot -Parent
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
 if (!(Test-Path $vswhere)) { throw 'Install Visual Studio with the Office/SharePoint development workload.' }

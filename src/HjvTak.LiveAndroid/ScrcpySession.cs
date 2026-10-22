@@ -30,6 +30,7 @@ namespace HjvTak.LiveAndroid
                 WorkingDirectory = Path.GetDirectoryName(executable), UseShellExecute = false,
                 CreateNoWindow = true, RedirectStandardError = true, RedirectStandardOutput = true
             };
+            LocalCommand.SetAdbEnvironment(start, Path.Combine(Path.GetDirectoryName(executable), "adb.exe"));
             process = new Process { StartInfo = start };
             process.ErrorDataReceived += Capture;
             process.OutputDataReceived += Capture;

@@ -23,20 +23,28 @@ namespace HjvTak.LiveAndroid
         {
             var controller = addIn.Controller;
             if (controller == null) return false;
-            if (control.Id == "StartAndroid" || control.Id == "Settings") return !controller.IsActive;
+            if (control.Id == "StartAndroid" || control.Id == "ConnectWifi" || control.Id == "Settings") return !controller.IsActive;
             if (control.Id == "StopAndroid") return controller.IsActive;
             return true;
         }
         public bool GetPressed(Office.IRibbonControl control) => addIn.Controller?.OverlayEnabled ?? false;
         public void OnAddMarker(Office.IRibbonControl control) { Run(() => addIn.Controller.AddAnchorToCurrentSlide()); }
-        public void OnStart(Office.IRibbonControl control)
+        public void OnConnectWifi(Office.IRibbonControl control) { OpenWifi(false); }
+        public void OnStart(Office.IRibbonControl control) { OpenWifi(true); }
+        private void OpenWifi(bool reconnect)
         {
             Run(() => {
                 var settings = UserSettings.Load();
-                if (string.IsNullOrEmpty(settings.ScrcpyPath))
+                if (string.IsNullOrEmpty(settings.ScrcpyPath) || !File.Exists(settings.ScrcpyPath))
                 {
                     using (var dialog = new SettingsDialog(settings)) if (dialog.ShowDialog() != DialogResult.OK) return;
                 }
+                using (var dialog = new WifiDialog(settings.ScrcpyPath, settings.Serial, reconnect))
+                {
+                    if (dialog.ShowDialog() != DialogResult.OK) return;
+                    settings.Serial = dialog.Endpoint;
+                }
+                settings.Save();
                 addIn.Controller.StartDevice(settings.ScrcpyPath, settings.Serial);
             });
         }
@@ -47,7 +55,7 @@ namespace HjvTak.LiveAndroid
         public void OnStatus(Office.IRibbonControl control)
         {
             Run(() => MessageBox.Show(addIn.Controller.Status + "\n\n" + addIn.Controller.Diagnostics +
-                "\n\n0.0.002 development build. This overlay is not saved as video in the PPTX or included in PowerPoint exports.",
+                "\n\n0.0.003 development build. This overlay is not saved as video in the PPTX or included in PowerPoint exports.",
                 "Android Live status", MessageBoxButtons.OK, MessageBoxIcon.Information));
         }
         private void Run(Action action)

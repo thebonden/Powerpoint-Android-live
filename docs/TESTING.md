@@ -1,4 +1,13 @@
-# Validation — development version 0.0.002
+# Validation — development version 0.0.003
+
+## Wi-Fi update (2026-10-22)
+
+- Complete Debug and Release VSTO builds including the standalone x64 QR helper succeeded. Both configurations passed all 27 managed test groups.
+- **27 managed test groups passed**, including the earlier 14 plus endpoint/result validation, successful helper + ADB handoff, cancellation, nonzero exit, malformed output, offline reconnect, bounded output and child-process timeout/cleanup. Devices are simulated; no live tablet was paired by these tests.
+- Reused native QR tests pass: payload, mDNS parsing, exact session/device matching, stdin secret, port selection, cancellation, timeout and ambiguity rejection. Added cases cover offline state, unrelated GUID, using the pairing port as a connection port, and cancellation after pairing.
+- The full PowerPoint-branded QR dialog was rendered with fixed dummy credentials and independently decoded with jsQR to the expected Android ADB payload. No live pairing secret or network command was used in that preview test.
+- Actual tablet scanning/streaming in PowerPoint, VSTO ribbon loading and the full multi-monitor slideshow acceptance matrix remain pending. The user's successful OBS pairing is the source of the reused code, not evidence that this new PowerPoint integration has passed hardware tests.
+
 
 ## Recorded local evidence (2026-10-21)
 
@@ -44,7 +53,8 @@ Record Windows, Office build/channel/bitness, scrcpy version, Android model/vers
 | --- | --- |
 | Fresh setup | Clean clone → build → register → open PowerPoint. Android Live ribbon appears; settings, dialogs and callbacks work. Unregister then reopen; ribbon is gone. |
 | 32/64-bit Office | Repeat runtime tests on both. AnyCPU/PInvoke builds do not substitute for runtime checks. |
-| USB/device selection | Single authorized phone connects; unauthorized/missing device gives actionable status and timeout. Two devices require a serial. A path with spaces works. |
+| Wi-Fi / QR | On a PC without OBS, use a tablet with no USB cable. Scan from Wireless debugging; exact tablet pairs and video starts. Test two nearby tablets, wrong scanner, expired code, unavailable mDNS, cancel and retry. A scrcpy path with spaces works. |
+| Wi-Fi reconnect | Stop/start using saved endpoint; change tablet IP/port; old address must fail clearly, then QR or a verified current connection address succeeds. Offline/unauthorized devices must never be treated as connected. |
 | Basic show | Move/resize marker, run full-screen and windowed shows; feed remains inside its rectangle with device aspect preserved. An unmarked slide hides it; return shows it. |
 | Long transitions | Use a transition longer than 250 ms. Overlay stays hidden through the transition and then returns. Animated marker behavior is explicitly unsupported. |
 | Blanking/pause | B, W, pause and resume; feed disappears while blank/paused and returns. Account for timer latency. |
@@ -53,7 +63,7 @@ Record Windows, Office build/channel/bitness, scrcpy version, Android model/vers
 | DPI/layout | 100/125/150/200%, mixed scaling, left/above negative-origin monitor, move/resize window, portrait and 4:3/16:9 decks. Measure rectangle alignment. |
 | Multiple shows | Open two shows: feed hides with status instead of picking the wrong deck. Close one: valid remaining show can resume. |
 | Unsupported marker | Rotated/grouped/hidden/off-slide marker does not produce a misplaced overlay. Keep one named marker per slide, without marker animations. |
-| Rotation/disconnect | Rotate the phone both ways; disconnect USB or terminate the owned scrcpy instance. No frozen orphan window. Start reconnects; PowerPoint remains responsive. |
+| Rotation/disconnect | Rotate the phone both ways; disable tablet Wi-Fi or terminate the owned scrcpy instance. No frozen orphan window. Start reconnects; PowerPoint remains responsive. |
 | End/shutdown | End show, close presentation and exit PowerPoint; video hides and owned process exits on add-in shutdown. Repeated Stop is safe. An unrelated scrcpy session survives. |
 | Capture/export | Test whole-screen sharing/recording explicitly. Confirm slide-only sharing, PDF and native PowerPoint video export do not include this external feed; do not imply they do. |
 | Duration | Run 30 minutes with navigation and reconnects; record latency, CPU/GPU, memory and any COM/process leaks. |

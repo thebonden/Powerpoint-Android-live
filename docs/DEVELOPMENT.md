@@ -1,9 +1,10 @@
-# Windows development — 0.0.002
+# Windows development — 0.0.003
 
 ## Prerequisites and reproducible build
 
 - Windows 10/11; desktop PowerPoint for runtime tests.
 - Visual Studio 2022 or 2026 with **Office/SharePoint development** (called **Microsoft 365 development** in newer installers), .NET Framework 4.8 developer/targeting pack, Office PIAs and VSTO tools.
+- Visual Studio **Desktop development with C++** and Windows SDK for the standalone x64 QR helper; Windows x64 is required to run it.
 - PowerShell 7. The normal .NET SDK alone cannot build VSTO manifests; the script locates full Visual Studio MSBuild through vswhere.
 
 ```powershell
@@ -11,11 +12,11 @@ pwsh ./scripts/build.ps1 -Configuration Debug
 pwsh ./scripts/build.ps1 -Configuration Release
 ```
 
-Both commands build the actual VSTO project and run the self-contained Windows test executable. No NuGet test framework or Android device is needed. Build output is under `src/HjvTak.LiveAndroid/bin/<Configuration>/` and includes the DLL, utility dependency, `.dll.manifest` and `.vsto`.
+Both commands build the native QR helper and its tests first, then the actual VSTO project and the self-contained managed Windows test executable. The helper and its licenses are included as VSTO manifest content. No NuGet test framework or Android device is needed. Build output is under `src/HjvTak.LiveAndroid/bin/<Configuration>/` and includes the DLL, utility dependency, `.dll.manifest` and `.vsto`.
 
 The first build creates `artifacts/development.pfx`, valid for one year, with an empty PFX password, and imports it into **CurrentUser/My** so MSBuild can sign the manifests. This is a disposable development key, not a release credential. `artifacts/Signing.props` contains its thumbprint for subsequent Visual Studio builds. Both are ignored by Git. VSTO's build tasks also create a local inclusion-list trust entry for this build. No certificate is added to Trusted Root by our script. Build/Clean override VSTO's automatic add-in registration/unregistration; explicit registration is a separate command below.
 
-After the first scripted build, open `Powerpoint-Android-live.sln`. All generated VSTO host files are checked in. There is no manual scaffold step. For an expired development certificate, remove only `artifacts/development.pfx` and `artifacts/Signing.props` and rerun the script; old personal certificates can be removed using Windows certificate management. Do not redistribute the key. Production publishing requires an appropriate signing/deployment process and is outside this development build.
+The QR sources require no OBS SDK or libraries. Changes to native helper code must go through the scripted build before building in Visual Studio. After the first scripted build, open `Powerpoint-Android-live.sln`. All generated VSTO host files are checked in. There is no manual scaffold step. For an expired development certificate, remove only `artifacts/development.pfx` and `artifacts/Signing.props` and rerun the script; old personal certificates can be removed using Windows certificate management. Do not redistribute the key. Production publishing requires an appropriate signing/deployment process and is outside this development build.
 
 ## Register and remove the local development build
 
@@ -41,21 +42,25 @@ The script retains source/build files, certificates and settings. To switch betw
 
 - `ThisAddIn.Designer.*`: standard VSTO host bootstrap based on the installed Microsoft PowerPoint add-in template.
 - `ThisAddIn.cs`: controller lifetime and ribbon creation.
+- `WifiDialog.cs` and core `WifiConnector`, `LocalCommand`, `WifiEndpoint`: QR/reconnect dialog, bounded asynchronous commands and strict endpoint/result validation.
+- `native/WifiQr`: independently built GPL QR helper and MIT QR generator adapted from the working OBS project; no OBS runtime dependency.
 - `AndroidRibbon.*`, `SettingsDialog.cs`, `UserSettings.cs`: ribbon callbacks, configuration and per-user XML settings.
 - `LiveAndroidController.cs`: STA-only Office events, 100 ms timer, marker management and show alignment. COM references obtained by the controller are released; the VSTO-owned application/event arguments are never released.
 - `ScrcpySession.cs`: launches one owned scrcpy process, reads output on background callbacks without COM access, and discovers the video window by exact PID plus unique title.
 - `NativeWindow.cs`: physical client coordinates, thread DPI scope, owned popup placement with NOACTIVATE, no global TOPMOST or SetParent.
 - `HjvTak.LiveAndroid.Core`: shared source for geometry, visibility guards, command-line quoting and lifecycle state, compiled into production and tests.
 
-The overlay owner is detached on slideshow end/presentation close. Device connection remains until Stop, failure or add-in shutdown. Phone screen rotation is rendered by scrcpy; placement is reapplied to the marker. ADB connection/reconnection is explicit; no silent pairing, download, network setup or arbitrary extra command-line options are exposed.
+The overlay owner is detached on slideshow end/presentation close. Device connection remains until Stop, failure or add-in shutdown. Phone screen rotation is rendered by scrcpy; placement is reapplied to the marker. Wi-Fi pairing/reconnection is explicit through the PowerPoint dialog; no USB is required. No download, network setup or arbitrary extra command-line options are exposed.
 
 ## Troubleshooting
 
 - **Build cannot find VSTO/PIAs:** add the Visual Studio Office workload; use the provided script, not `dotnet build`.
 - **Ribbon absent:** verify the registered manifest exists, matching VSTO runtime is installed, and inspect PowerPoint Options → Add-ins → COM Add-ins/Disabled Items. Development certificate trust and organizational policy can prevent loading. Do not bypass organizational policy.
-- **No video:** use Status / diagnostics; check the executable path, USB authorization, cable and serial. The complete scrcpy distribution must be present. Reconnect with Start.
+- **No video:** use Status / diagnostics; check the executable path, Wireless debugging, network and current connection address. Use Forbind via Wi-Fi / QR to pair. The complete scrcpy distribution must be present. Reconnect with Start.
 - **Connected but hidden:** activate the one running slideshow, return from black/white/pause, and ensure the slide has an unrotated rectangle named `HJVTAK_ANDROID_LIVE` wholly inside it. A renamed, grouped, rotated or animated marker is unsupported.
 - **COM busy:** the overlay is hidden and retried on the next timer tick. No recurring modal error dialogs are shown.
 - **Settings:** `%LOCALAPPDATA%/HjvTak/AndroidLive/settings.xml`; corrupt/unreadable settings fall back to an empty configuration. Diagnostics are bounded in memory and shown only on request.
 
 See [TESTING.md](TESTING.md) for the opt-in PowerPoint smoke harness and remaining acceptance gates.
+
+See [WIFI.md](WIFI.md) for the QR protocol, cancellation and network troubleshooting. The helper is x64 even with 32-bit Office; preserve the full tools directory and license files when moving the build.

@@ -16,6 +16,7 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        if (args.Length > 0 && (args[0] == "--fake-mode" || args[0] == "--powerpoint" || args[0] == "-H")) return FakeWifi(args);
         // This executable doubles as a fake scrcpy, so integration tests exercise real child-process cleanup.
         string title = args.FirstOrDefault(a => a.StartsWith("--window-title="));
         if (title != null) return FakeScrcpy(title.Substring("--window-title=".Length), args);
@@ -106,8 +107,103 @@ internal static class Program
             }
             finally { System.IO.File.Delete(badExe); }
         });
+        Test("Wi-Fi address accepts explicit IPv4 connection ports", () => {
+            foreach (var address in new[] { "192.168.1.50:37123", "10.0.0.8:1", "172.16.0.1:65535" }) Check(WifiEndpoint.IsValid(address));
+        });
+        Test("Wi-Fi address rejects ambiguous or injected targets", () => {
+            foreach (var address in new[] { "", "127.0.0.1:55", "0.0.0.0:55", "224.0.0.1:55", "10.0.0.255:55", "10.0.0.1:0", "10.0.0.1:65536", "010.0.0.1:55", "10.0.0.1:055", "tablet:55", "[::1]:55", "10:0.0.1.55", "10.0.0.1:55 --foo", "10.0.0.1:55\n", "10.0.0.1:55;bad" }) Check(!WifiEndpoint.IsValid(address));
+        });
+        Test("private helper protocol rejects unrelated and duplicate output", () => {
+            Equal("10.0.0.8:4444", WifiEndpoint.ParseHelperResult("ANDROID_PPT_QR_V1 10.0.0.8:4444\r\n"));
+            Equal(null, WifiEndpoint.ParseHelperResult(""));
+            foreach (var value in new[] { "10.0.0.8:4444", "ANDROID_OBS_QR_V1 10.0.0.8:4444", "ANDROID_PPT_QR_V1 127.0.0.1:55", "ANDROID_PPT_QR_V1 10.0.0.8:4444 extra", "ANDROID_PPT_QR_V1 10.0.0.8:4444\nANDROID_PPT_QR_V1 10.0.0.9:5555" }) Throws(() => WifiEndpoint.ParseHelperResult(value));
+        });
+        Test("Wi-Fi QR success revalidates connection using local ADB", () => {
+            string exe=typeof(Program).Assembly.Location;
+            Equal("10.0.0.8:4444", new WifiConnector(exe,exe).PairAsync(System.Threading.CancellationToken.None).GetAwaiter().GetResult());
+        });
+        Test("closing QR returns no endpoint", () => WithWifiCase("cancel", () => {
+            string exe=typeof(Program).Assembly.Location;
+            Equal(null,new WifiConnector(exe,exe).PairAsync(System.Threading.CancellationToken.None).GetAwaiter().GetResult());
+        }));
+        Test("QR malformed output cannot launch a connection", () => WithWifiCase("malformed", () => {
+            string exe=typeof(Program).Assembly.Location;
+            Throws(() => new WifiConnector(exe,exe).PairAsync(System.Threading.CancellationToken.None).GetAwaiter().GetResult());
+        }));
+        Test("QR helper nonzero exit cannot be accepted", () => WithWifiCase("failure", () => {
+            string exe=typeof(Program).Assembly.Location;
+            Throws(() => new WifiConnector(exe,exe).PairAsync(System.Threading.CancellationToken.None).GetAwaiter().GetResult());
+        }));
+        Test("Wi-Fi reconnect rejects offline device even with exit zero", () => WithWifiCase("offline", () => {
+            string exe=typeof(Program).Assembly.Location;
+            Throws(() => new WifiConnector(exe,exe).ConnectAsync("10.0.0.8:4444",System.Threading.CancellationToken.None).GetAwaiter().GetResult());
+        }));
+        Test("invalid Wi-Fi target is rejected before a process starts", () => {
+            Throws(() => new WifiConnector("missing.exe","missing.exe").ConnectAsync("10.0.0.8:4444 --evil",System.Threading.CancellationToken.None).GetAwaiter().GetResult());
+        });
+        Test("command cancellation terminates only its own child", () => CheckCommandCancellation(false));
+        Test("command timeout terminates a stalled child", () => CheckCommandCancellation(true));
+        Test("connection output is bounded", () => {
+            bool rejected=false;
+            try { LocalCommand.RunAsync(typeof(Program).Assembly.Location,"--fake-mode flood",System.Threading.CancellationToken.None,TimeSpan.FromSeconds(3)).GetAwaiter().GetResult(); }
+            catch(System.IO.IOException) { rejected=true; }
+            Check(rejected);
+        });
+        Test("pre-cancelled connection never launches", () => {
+            using(var cancel=new CancellationTokenSource()) {
+                cancel.Cancel(); bool cancelled=false;
+                try { LocalCommand.RunAsync("missing.exe","",cancel.Token,TimeSpan.FromSeconds(3)).GetAwaiter().GetResult(); }
+                catch(OperationCanceledException){cancelled=true;} Check(cancelled);
+            }
+        });
         Console.WriteLine("Tests: " + passed + " passed, " + failed + " failed.");
         return failed == 0 ? 0 : 1;
+    }
+    private static void WithWifiCase(string value,Action test)
+    {
+        string previous=Environment.GetEnvironmentVariable("PPT_WIFI_TEST_CASE");
+        try { Environment.SetEnvironmentVariable("PPT_WIFI_TEST_CASE",value); test(); }
+        finally { Environment.SetEnvironmentVariable("PPT_WIFI_TEST_CASE",previous); }
+    }
+    private static int FakeWifi(string[] args)
+    {
+        if(args[0]=="--fake-mode") {
+            if(args[1]=="flood") { Console.Write(new string('x',40000)); return 0; }
+            System.IO.File.WriteAllText(args[2],Process.GetCurrentProcess().Id.ToString());
+            Thread.Sleep(30000); return 0;
+        }
+        string scenario=Environment.GetEnvironmentVariable("PPT_WIFI_TEST_CASE");
+        if(args[0]=="--powerpoint") {
+            if(args.Length!=3 || args[1]!="--adb" || args[2]!=typeof(Program).Assembly.Location)return 3;
+            if(scenario=="failure")return 2;
+            if(scenario!="cancel")Console.WriteLine(scenario=="malformed" ? "untrusted output" : "ANDROID_PPT_QR_V1 10.0.0.8:4444");
+            return 0;
+        }
+        if(!args.Take(4).SequenceEqual(new[]{"-H","localhost","-P","5037"}) ||
+           Environment.GetEnvironmentVariable("ADB_SERVER_SOCKET")!="tcp:localhost:5037" ||
+           Environment.GetEnvironmentVariable("ADB")!=typeof(Program).Assembly.Location)return 3;
+        if(args.Skip(4).SequenceEqual(new[]{"connect","10.0.0.8:4444"})) { Console.WriteLine("connected"); return 0; }
+        if(args.Skip(4).SequenceEqual(new[]{"-s","10.0.0.8:4444","get-state"})) { Console.WriteLine(scenario=="offline"?"offline":"device"); return 0; }
+        return 4;
+    }
+    private static void CheckCommandCancellation(bool timeout)
+    {
+        string path=System.IO.Path.Combine(System.IO.Path.GetTempPath(),"ppt-wifi-pid-"+Guid.NewGuid().ToString("N"));
+        try {
+            using(var cancel=new CancellationTokenSource()) {
+                var task=LocalCommand.RunAsync(typeof(Program).Assembly.Location,"--fake-mode wait "+ScrcpyArguments.Quote(path),cancel.Token,TimeSpan.FromSeconds(timeout?1:10));
+                Await(()=>System.IO.File.Exists(path) && new System.IO.FileInfo(path).Length>0);
+                int pid=int.Parse(System.IO.File.ReadAllText(path));
+                if(!timeout)cancel.Cancel();
+                bool rejected=false;
+                try { task.GetAwaiter().GetResult(); }
+                catch(OperationCanceledException){rejected=!timeout;}
+                catch(TimeoutException){rejected=timeout;}
+                Check(rejected);
+                try { using(var process=Process.GetProcessById(pid))Check(process.HasExited); }
+                catch(ArgumentException) { }
+            }
+        } finally { if(System.IO.File.Exists(path))System.IO.File.Delete(path); }
     }
     private static int FakeScrcpy(string title, string[] args)
     {

@@ -13,7 +13,7 @@ namespace HjvTak.LiveAndroid.Core
         public void Start(DateTime utcNow)
         {
             State = DeviceState.Starting;
-            Detail = "Waiting for Android (authorize USB debugging on the phone)";
+            Detail = "Waiting for tablet video over Wi-Fi";
             deadline = utcNow.AddSeconds(20);
         }
         public bool Poll(DateTime utcNow, bool exited, int exitCode, bool hasWindow)
@@ -22,7 +22,7 @@ namespace HjvTak.LiveAndroid.Core
             if (exited) { Fail("scrcpy exited (code " + exitCode + "). Check the device and start again."); return true; }
             if (State == DeviceState.Starting && hasWindow) { State = DeviceState.Running; Detail = "Connected"; }
             else if (State == DeviceState.Starting && utcNow >= deadline)
-            { Fail("No video window after 20 seconds. Check USB authorization and device serial."); return true; }
+            { Fail("No video window after 20 seconds. Check Wireless debugging and the connection address."); return true; }
             else if (State == DeviceState.Running && !hasWindow)
             { Fail("The video window closed. Start again to reconnect."); return true; }
             return false;

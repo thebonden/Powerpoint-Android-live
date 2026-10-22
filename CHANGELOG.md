@@ -1,5 +1,16 @@
 # Changes
 
+## 0.0.003 — 2026-10-22 (development)
+
+- Add PowerPoint **Forbind via Wi-Fi / QR** and verified **Start / reconnect** workflow; no USB or OBS Studio is required.
+- Reuse the working native QR pairing code as an independent helper with PowerPoint wording, an explicit selected ADB path, a private endpoint protocol and preserved GPL/MIT source/license notices.
+- Validate exact mDNS session/device identity and separate pairing/connection ports; recheck device state before storing the endpoint or launching the feed.
+- Add bounded asynchronous command execution, cancellation, timeout, strict IPv4/result parsing and local ADB environment configuration shared with scrcpy.
+- Build/package the helper with VSTO manifests and add 13 managed Wi-Fi regression groups plus native pairing edge cases; independently decode the rendered dummy QR fixture.
+- Make standalone operation and the continued external-overlay limitation explicit in setup, research and acceptance documentation.
+
+Numeric assembly/ClickOnce version: `0.0.3.0`. Physical tablet/PowerPoint validation remains pending.
+
 ## 0.0.002 — 2026-10-21 (development)
 
 - Add complete .NET Framework 4.8 PowerPoint VSTO project, solution, generated host bootstrap, signed development manifests and repeatable build/registration scripts.

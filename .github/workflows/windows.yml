@@ -16,7 +16,16 @@ jobs:
       - name: Upload development build (no signing key)
         uses: actions/upload-artifact@v4
         with:
-          name: Android-Live-0.0.002-development
+          name: Android-Live-0.0.003-development
           path: src/HjvTak.LiveAndroid/bin/Release/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload matching source and license notices
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-Live-0.0.003-source
+          path: |
+            native/WifiQr/
+            scripts/build-wifi-helper.ps1
           if-no-files-found: error
           retention-days: 14
