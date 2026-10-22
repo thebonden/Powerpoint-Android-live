@@ -13,9 +13,9 @@ The Wi-Fi helper reuses the pairing code and ideas from the user's working OBS p
 Requires Windows x64, PowerShell 7, Visual Studio 2022/2026 with Office/SharePoint (Microsoft 365) development, Desktop development with C++, Windows SDK and .NET Framework 4.8 targeting pack. Desktop PowerPoint and the VSTO runtime are required to run the add-in. The native helper is x64; the managed add-in is AnyCPU (32-bit Office runtime testing remains pending).
 
 ```powershell
-pwsh ./scripts/build.ps1
-# Close PowerPoint before registering the local development build:
-pwsh ./scripts/register-dev.ps1
+pwsh ./scripts/build.ps1 -Configuration Release
+# Close PowerPoint, then complete the Microsoft installation dialog:
+pwsh ./scripts/install-dev.ps1 -Configuration Release
 ```
 
 This builds the QR helper from source, checks its vendored QR-generator hashes, runs the native/managed tests and generates signed VSTO development manifests including the helper. No external software is downloaded by the build. [Development setup](docs/DEVELOPMENT.md) covers signing, registration and removal.

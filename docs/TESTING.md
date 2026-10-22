@@ -9,6 +9,14 @@
 - Actual tablet scanning/streaming in PowerPoint and the full multi-monitor slideshow acceptance matrix remain pending. Ribbon loading was subsequently verified as recorded below. The user's successful OBS pairing is the source of the reused code, not evidence that this new PowerPoint integration has passed hardware tests.
 
 
+## Normal-launch regression and installation correction (2026-10-22)
+
+- The user reproduced the missing ribbon after closing the successful test session and starting PowerPoint normally. The normal instance did not enumerate `HjvTak.LiveAndroid`; the Disabled Items list was empty. The earlier runtime check below therefore does **not** establish reliable installation.
+- A probe in the development process saw the HKCU add-in key with LoadBehavior 3. A separate read-only probe launched by the actual Explorer desktop, under the same user, reported that the key did not exist. This explains why a development-host launch succeeded while a desktop launch failed. Package-identity detection alone did not identify this registry-view difference.
+- Running the Microsoft installer through that desktop context required the normal user trust prompt for the locally signed development build; silent installation returned -300 and did not register the add-in. No trust/security setting was bypassed.
+- Added `scripts/install-dev.ps1` to open the official installation dialog through Explorer's desktop Application. Its `-WhatIf` validation passed against the existing Release build. Updated the low-level registration message and setup docs to avoid treating a private registry write or installer launch as successful installation.
+- Completing the user trust prompt and verifying two normal desktop launches are pending. Tablet QR pairing and live slideshow playback are also pending.
+
 ## PowerPoint runtime check (2026-10-22)
 
 - After the local package was installed with Microsoft's VSTOInstaller and all PowerPoint processes exited, a fresh PowerPoint launch reported `HjvTak.LiveAndroid` with `COMAddIn.Connect = true`. VSTO loader and CLR modules were loaded.

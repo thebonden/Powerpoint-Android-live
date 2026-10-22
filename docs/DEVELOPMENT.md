@@ -18,9 +18,19 @@ The first build creates `artifacts/development.pfx`, valid for one year, with an
 
 The QR sources require no OBS SDK or libraries. Changes to native helper code must go through the scripted build before building in Visual Studio. After the first scripted build, open `Powerpoint-Android-live.sln`. All generated VSTO host files are checked in. There is no manual scaffold step. For an expired development certificate, remove only `artifacts/development.pfx` and `artifacts/Signing.props` and rerun the script; old personal certificates can be removed using Windows certificate management. Do not redistribute the key. Production publishing requires an appropriate signing/deployment process and is outside this development build.
 
-## Register and remove the local development build
+## Install for normal PowerPoint launches
 
-Close PowerPoint first. Register per user (no administrator rights):
+Close PowerPoint and run `pwsh ./scripts/install-dev.ps1 -Configuration Release` after the build. This opens the existing Microsoft VSTO installer **through the running Windows Explorer desktop**. Review and complete its prompt. A local development certificate can appear as an unknown publisher; this script does not silently grant trust, import a certificate into Trusted Root/Publishers, or change Office security settings. Follow organizational policy if installation is blocked.
+
+The script only reports that it opened the installer. Verify success by starting PowerPoint from the normal Start menu/taskbar, opening a blank presentation, checking Android Live, then closing and reopening PowerPoint the same way. A successful launch from a development host is insufficient evidence.
+
+Why this matters: during local testing the development process could read this add-in's HKCU registration while a read-only probe launched by the actual Explorer desktop (same Windows user) could not. The add-in loaded from the development host but was absent from normal PowerPoint's COM Add-ins list. Merely using `Shell.Application.ShellExecute` from the caller did not reproduce the desktop view; the script obtains Explorer's desktop Application via `FindWindowSW`. This avoids mistaking a private/isolated registry view for the ordinary user's Office registration.
+
+Microsoft's installer manages its ClickOnce registration/cache separately from the low-level local registration below. Do not mix the two during a test. Remove the installed customization through Windows Installed apps when switching back to registry-only development; do not remove unrelated Office add-ins. Keep the original build files at their current path while this development installation is in use.
+
+## Register and remove the local development build (advanced)
+
+This low-level option affects the current process registry view only. When running inside a packaged/isolated development host, use the desktop installer above instead. Close PowerPoint first. Register per user (no administrator rights):
 
 ```powershell
 pwsh ./scripts/register-dev.ps1 -Configuration Debug

@@ -21,4 +21,5 @@ try {
     $key.SetValue('Manifest',$uri)
     $key.SetValue('LoadBehavior',3,[Microsoft.Win32.RegistryValueKind]::DWord)
 } finally { $key.Dispose() }
-Write-Host 'Registered the local development build for this Windows user. Open PowerPoint and find Android Live.'
+Write-Host 'Registered the local development build in this process registry view.'
+Write-Host 'For ordinary desktop use, prefer install-dev.ps1 and verify by launching PowerPoint normally. A packaged host may have a private registry view.'
