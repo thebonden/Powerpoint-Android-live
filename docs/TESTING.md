@@ -6,8 +6,15 @@
 - **27 managed test groups passed**, including the earlier 14 plus endpoint/result validation, successful helper + ADB handoff, cancellation, nonzero exit, malformed output, offline reconnect, bounded output and child-process timeout/cleanup. Devices are simulated; no live tablet was paired by these tests.
 - Reused native QR tests pass: payload, mDNS parsing, exact session/device matching, stdin secret, port selection, cancellation, timeout and ambiguity rejection. Added cases cover offline state, unrelated GUID, using the pairing port as a connection port, and cancellation after pairing.
 - The full PowerPoint-branded QR dialog was rendered with fixed dummy credentials and independently decoded with jsQR to the expected Android ADB payload. No live pairing secret or network command was used in that preview test.
-- Actual tablet scanning/streaming in PowerPoint, VSTO ribbon loading and the full multi-monitor slideshow acceptance matrix remain pending. The user's successful OBS pairing is the source of the reused code, not evidence that this new PowerPoint integration has passed hardware tests.
+- Actual tablet scanning/streaming in PowerPoint and the full multi-monitor slideshow acceptance matrix remain pending. Ribbon loading was subsequently verified as recorded below. The user's successful OBS pairing is the source of the reused code, not evidence that this new PowerPoint integration has passed hardware tests.
 
+
+## PowerPoint runtime check (2026-10-22)
+
+- After the local package was installed with Microsoft's VSTOInstaller and all PowerPoint processes exited, a fresh PowerPoint launch reported `HjvTak.LiveAndroid` with `COMAddIn.Connect = true`. VSTO loader and CLR modules were loaded.
+- In a new blank presentation, the **Android Live** tab was visually verified. Opening it displayed Add overlay marker, Forbind via Wi-Fi / QR, Start / reconnect, Stop Android, Show overlay, Settings and Status / diagnostics. The Settings dialog also opened.
+- Earlier sessions did not enumerate the add-in, and the Disabled Items list was empty. The successful later launch does not isolate the original cause; it does not prove that registry-only registration is sufficient on every machine.
+- No source or binary change was required for this successful load. It validates ribbon presence and the settings dialog only, not QR pairing, the live feed, marker behavior or slideshow rendering. Those hardware/interactive checks remain pending.
 
 ## Recorded local evidence (2026-10-21)
 
