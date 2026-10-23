@@ -122,9 +122,9 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <PropertyGroup>
-    <FriendlyName>HJVTAK Android Live 0.0.004</FriendlyName>
+    <FriendlyName>HJVTAK Android Live 0.0.005</FriendlyName>
     <Description>Android live window overlay for PowerPoint</Description>
-    <ApplicationVersion>0.0.4.0</ApplicationVersion>
+    <ApplicationVersion>0.0.5.0</ApplicationVersion>
     <GenerateManifests>true</GenerateManifests>
     <LangVersion>7.3</LangVersion>
     <SignManifests>true</SignManifests>
@@ -168,6 +168,7 @@
   <ItemGroup>
     <Compile Include="ScrcpySetupDialog.cs" />
     <Compile Include="..\HjvTak.LiveAndroid.Core\ScrcpyLocator.cs" />
+    <Compile Include="..\HjvTak.LiveAndroid.Core\DeploymentFiles.cs" />
     <Compile Include="WifiDialog.cs" />
     <Compile Include="..\HjvTak.LiveAndroid.Core\WifiEndpoint.cs" />
     <Compile Include="..\HjvTak.LiveAndroid.Core\LocalCommand.cs" />

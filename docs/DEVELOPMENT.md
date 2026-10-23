@@ -1,4 +1,4 @@
-# Windows development — 0.0.004
+# Windows development — 0.0.005
 
 ## Prerequisites and reproducible build
 

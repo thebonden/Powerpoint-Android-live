@@ -1,6 +1,6 @@
 # HJVTAK PowerPoint Android Live
 
-**0.0.004 — development build, not accepted for production use.**
+**0.0.005 — development build, not accepted for production use.**
 
 A standalone Windows PowerPoint VSTO add-in for teaching from slides while showing a live Android tablet screen. Pair over **Wi-Fi with a QR code directly from PowerPoint**. No USB connection, OBS Studio, OBS plugin, camera bridge or Android Studio installation is required.
 
@@ -47,4 +47,4 @@ Audio and computer-to-tablet input are disabled. Use the tablet directly; advanc
 
 The QR helper's reused GPL-2.0-or-later code and MIT QR generator retain their licenses and source under `native/WifiQr`. Keep corresponding helper source with any redistribution. CI provides both binary and helper-source artifacts.
 
-User version **0.0.004** maps to assembly/ClickOnce **0.0.4.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**
+User version **0.0.005** maps to assembly/ClickOnce **0.0.5.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**

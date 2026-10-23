@@ -1,4 +1,12 @@
-# Validation — development version 0.0.004
+# Validation — development version 0.0.005
+
+## Installed QR helper correction — 0.0.005 (2026-10-23)
+
+- Full Release build, native QR tests and **34 managed test groups passed**. A real CLR shadow-copy test verifies helper resolution from the original deployment, including spaces and Unicode.
+- The desktop installer updated successfully. A normal Explorer-brokered PowerPoint launch reported version 0.0.005 connected; the ribbon was visually verified.
+- Automatic discovery selected the installed WinGet package in PowerPoint. The user scanned the QR code; actual scrcpy diagnostics confirmed a Samsung SM-X356B on Android 16 and a 1920x1200 video texture.
+- The user reported no visible image after pairing. Diagnostics explicitly showed "No slideshow; overlay hidden." This is the current editing-view behavior, not a failed QR connection. A preview and optional audio/touch/orientation controls are the next development work.
+- Visible slideshow rendering, physical touch/audio and the full hardware acceptance matrix remain pending. No device address or pairing credential is included in this evidence.
 
 ## Automatic discovery update — 0.0.004 (2026-10-22)
 
@@ -21,7 +29,7 @@
 - A probe in the development process saw the HKCU add-in key with LoadBehavior 3. A separate read-only probe launched by the actual Explorer desktop, under the same user, reported that the key did not exist. This explains why a development-host launch succeeded while a desktop launch failed. Package-identity detection alone did not identify this registry-view difference.
 - Running the Microsoft installer through that desktop context required the normal user trust prompt for the locally signed development build; silent installation returned -300 and did not register the add-in. No trust/security setting was bypassed.
 - Added `scripts/install-dev.ps1` to open the official installation dialog through Explorer's desktop Application. Its `-WhatIf` validation passed against the existing Release build. Updated the low-level registration message and setup docs to avoid treating a private registry write or installer launch as successful installation.
-- Completing the user trust prompt and verifying two normal desktop launches are pending. Tablet QR pairing and live slideshow playback are also pending.
+- The user subsequently approved the trust prompt and confirmed the ribbon. Desktop-brokered launches of 0.0.004 and 0.0.005 loaded the add-in; the later QR evidence is recorded above. Visible slideshow playback remains pending.
 
 ## PowerPoint runtime check (2026-10-22)
 

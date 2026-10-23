@@ -10,6 +10,7 @@
   <ItemGroup>
     <Compile Include="Program.cs"/>
     <Compile Include="ScrcpyDiscoveryTests.cs"/>
+    <Compile Include="ShadowCopyProbe.cs"/>
     <Compile Include="..\..\src\HjvTak.LiveAndroid.Core\*.cs"/>
     <Compile Include="..\..\src\HjvTak.LiveAndroid\NativeWindow.cs"/>
     <Compile Include="..\..\src\HjvTak.LiveAndroid\ScrcpySession.cs"/>

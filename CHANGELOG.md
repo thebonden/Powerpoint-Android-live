@@ -1,5 +1,13 @@
 # Changes
 
+## 0.0.005 — 2026-10-23 (development)
+
+- Resolve the native QR helper from the original signed deployment location instead of VSTO's managed-DLL shadow-copy folder.
+- Add a real CLR shadow-copy regression test (34 managed groups total).
+- Verify the installed add-in loads normally and the user's physical tablet QR connection reaches scrcpy video startup. Editing-view preview and visible slideshow acceptance are separate work.
+
+Numeric assembly/ClickOnce version: 0.0.5.0.
+
 ## 0.0.004 — 2026-10-22 (development)
 
 - Discover complete scrcpy installations automatically before QR pairing/reconnect; remember the discovered path.

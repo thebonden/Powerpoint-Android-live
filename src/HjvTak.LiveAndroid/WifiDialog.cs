@@ -22,7 +22,7 @@ namespace HjvTak.LiveAndroid
         {
             string adb = Path.Combine(Path.GetDirectoryName(scrcpyPath), "adb.exe");
             if (!File.Exists(adb)) throw new FileNotFoundException("adb.exe mangler ved siden af scrcpy.exe. Udpak hele scrcpy-pakken, og vælg den under Settings.");
-            string helper = Path.Combine(Path.GetDirectoryName(typeof(WifiDialog).Assembly.Location), "tools", "Android-WiFi-QR.exe");
+            string helper = DeploymentFiles.QrHelper(typeof(WifiDialog).Assembly);
             connector = new WifiConnector(adb, helper);
             Text = "Forbind tablet via Wi-Fi · PowerPoint"; ClientSize = new Size(610, 300);
             AutoScaleMode = AutoScaleMode.Dpi; FormBorderStyle = FormBorderStyle.FixedDialog;

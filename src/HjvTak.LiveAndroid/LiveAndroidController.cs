@@ -12,7 +12,7 @@ namespace HjvTak.LiveAndroid
     /// <summary>A slide-anchored external window, never native PowerPoint media. All COM calls run on the Office STA.</summary>
     public sealed class LiveAndroidController : IDisposable
     {
-        public const string Version = "0.0.004";
+        public const string Version = "0.0.005";
         public const string AnchorName = "HJVTAK_ANDROID_LIVE";
         private readonly PowerPoint.Application app;
         private readonly ScrcpySession session = new ScrcpySession();
@@ -80,7 +80,7 @@ namespace HjvTak.LiveAndroid
                 shape.AlternativeText = "Android live external window overlay. Not embedded video; not included in exports.";
                 text = shape.TextFrame;
                 range = text.TextRange;
-                range.Text = "Android live overlay\n0.0.004\nNot embedded video";
+                range.Text = "Android live overlay\n0.0.005\nNot embedded video";
                 shape.Select();
             }
             finally { Release(range); Release(text); Release(shape); Release(shapes); Release(page); Release(presentation); Release(slide); Release(view); Release(document); }

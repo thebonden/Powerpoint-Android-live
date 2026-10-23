@@ -1,4 +1,4 @@
-# Wi-Fi / QR connection — 0.0.004
+# Wi-Fi / QR connection — 0.0.005
 
 PowerPoint is standalone. It launches its own small QR helper; no OBS installation, running OBS process or plugin is needed. The helper reuses the working QR-pairing logic from the user's OBS project, with its source and license preserved in `native/WifiQr/NOTICE.md`.
 
