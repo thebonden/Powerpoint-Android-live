@@ -80,8 +80,7 @@ internal static class Program
     }
     private static IntPtr VideoWindow(LiveAndroidController controller)
     {
-        var session = typeof(LiveAndroidController).GetField("session",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(controller);
-        return (IntPtr)session.GetType().GetProperty("Window",BindingFlags.Instance|BindingFlags.NonPublic).GetValue(session);
+        return (IntPtr)typeof(LiveAndroidController).GetMethod("VideoWindow",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(controller,new object[]{"legacy"});
     }
     private static void Wait(Func<bool> ready)
     {

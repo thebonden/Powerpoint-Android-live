@@ -1,4 +1,4 @@
-# Wi-Fi / QR connection — 0.0.005
+# Wi-Fi / QR connection — 0.0.006
 
 PowerPoint is standalone. It launches its own small QR helper; no OBS installation, running OBS process or plugin is needed. The helper reuses the working QR-pairing logic from the user's OBS project, with its source and license preserved in `native/WifiQr/NOTICE.md`.
 
@@ -10,13 +10,13 @@ A candidate must include scrcpy.exe, adjacent adb.exe and scrcpy-server, plus SD
 
 ## Workflow
 
-`Forbind via Wi-Fi / QR` opens the connection dialog and starts the bundled `tools/Android-WiFi-QR.exe`. The helper receives only the path to the selected distribution's `adb.exe`; it generates a fresh Android ADB QR payload in memory. The user scans in Android's Wireless debugging pairing screen.
+`Tilføj tablet / QR` opens the connection dialog and starts the bundled `tools/Android-WiFi-QR.exe`. The helper receives only the path to the selected distribution's `adb.exe`; it generates a fresh Android ADB QR payload in memory. The user scans in Android's Wireless debugging pairing screen.
 
 The helper discovers `_adb-tls-pairing._tcp` for that random session name, sends the secret to `adb pair` through stdin, then discovers `_adb-tls-connect._tcp` for the exact device GUID returned by authenticated pairing. It connects to that service's port and verifies `get-state`. The two ports are not interchangeable. No service belonging to a different session/device is selected.
 
 On success the helper writes exactly `ANDROID_PPT_QR_V1 <IPv4:connection-port>` to its private inherited stdout pipe and closes. PowerPoint validates the format, reconnects/verifies `get-state` again, then saves the endpoint and starts the feed. Closing/cancelling, malformed output, timeout, offline state or failed exit does not change saved settings or start a new feed.
 
-`Start / reconnect` repeats the check against the saved endpoint. Changed addresses/ports require another QR pairing or the current connection address from the tablet's main Wireless debugging screen. The manual option assumes this PC is already paired. Old USB serial values from 0.0.002 are not automatically used for a wireless feed; the dialog opens QR pairing instead.
+`Forbind valgt` repeats the check against the saved endpoint. Changed addresses/ports require another QR pairing or the current connection address from the tablet's main Wireless debugging screen. The manual option assumes this PC is already paired. Old USB serial values from 0.0.002 are not automatically used for a wireless feed; the dialog opens QR pairing instead.
 
 ## Requirements and troubleshooting
 
@@ -38,3 +38,11 @@ On success the helper writes exactly `ANDROID_PPT_QR_V1 <IPv4:connection-port>` 
 - Reusing the pairing component does not change rendering: this release still aligns an external scrcpy window with a slide marker. Native slide video remains a separate investigation.
 
 Primary Android reference: [ADB — connect to a device over Wi-Fi](https://developer.android.com/tools/adb#connect-to-a-device-over-wi-fi).
+
+## Multiple paired devices (0.0.006)
+
+Use Tilføj tablet / QR for each additional tablet. The Tablet list selects which device the frame and option buttons affect. Name the devices under Navn / indstillinger. Forbind alle starts saved devices independently and reports individual failures while preserving successful connections. For a changed port, select the existing profile and use Par valgt igen / QR rather than adding it as a new device.
+
+Connect all desired devices before the presentation. A slide can contain frames for several devices, or different slides can choose different devices. Only device IDs are saved with slide frames; endpoint/ADB pairing remains on this PC. On a different PC, the frames need profiles with matching assignments; automatic profile transfer is not implemented.
+
+The preview opens after successful start. It is independent of slide editing and temporarily hides during a slideshow. See README for sound, physical touch indicators and automatic/locked capture orientation.

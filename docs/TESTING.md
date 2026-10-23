@@ -1,4 +1,18 @@
-# Validation — development version 0.0.005
+# Validation — development version 0.0.006
+
+## Preview and multiple devices — 0.0.006 (2026-10-23)
+
+- Full Release build and native QR tests passed. **40 managed test groups passed**, including all audio/touch/lock combinations, natural portrait/landscape and override dimensions, scoped/cancellable ADB size query, old settings migration, independent XML preferences and two real simulated child processes.
+- The process test verifies stopping/restarting/failing one device leaves the other running with the same owned window.
+- The user reported that QR pairing in 0.0.005 started a stream but no image appeared while editing. Actual diagnostics identified the deliberate no-slideshow hide rule; the new automatic preview addresses that case.
+- Installation and visual acceptance of the 0.0.006 ribbon/preview, two physical tablets across/same slide, audible output, finger indicators and physical orientation are pending. Automated tests do not establish those hardware outcomes.
+
+New manual checks:
+1. Pair/reconnect and see the editing preview immediately. Resize/move/minimize/close it, change selected tablet, switch to another app, then show again.
+2. Pair two distinct tablets. Use A on slide 1, B on slide 2, A+B on slide 3. Verify correct identity and bounds; duplicate one device's frame and verify that device hides.
+3. Stop/restart/disconnect one tablet while the other continues. End and reopen a saved deck; profile IDs remain stable.
+4. Toggle sound and finger marks for only the selected tablet. Verify a brief restart, no new QR requirement, PC output audio, visible finger marks and restoration on stop. Audio remains active while its image is hidden until muted/stopped.
+5. Test automatic and locked portrait/landscape on both natural device orientations, with tablet rotation and an Android app that locks its own layout.
 
 ## Installed QR helper correction — 0.0.005 (2026-10-23)
 

@@ -1,5 +1,15 @@
 # Changes
 
+## 0.0.006 — 2026-10-23 (development)
+
+- Show an automatic external preview after connection, making live video visible before a slideshow.
+- Save multiple named tablet profiles and run independent feeds. Assign a device to each slide frame; support different devices between slides and several devices on one slide.
+- Add per-device sound, physical touch indicators and Automatic/Landscape/Portrait capture orientation; preserve choices and restart only the affected stream.
+- Add selected/all connection and stop controls, settings migration, duplicate-frame rejection and cancellation for device preparation.
+- Add regression coverage for options, natural/override dimensions, exact-device orientation queries, settings migration/XML and independent live process stop/restart/failure.
+
+Numeric assembly/ClickOnce version: 0.0.6.0. Hardware acceptance of the new features remains pending.
+
 ## 0.0.005 — 2026-10-23 (development)
 
 - Resolve the native QR helper from the original signed deployment location instead of VSTO's managed-DLL shadow-copy folder.

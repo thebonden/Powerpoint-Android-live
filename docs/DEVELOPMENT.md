@@ -1,4 +1,4 @@
-# Windows development — 0.0.005
+# Windows development — 0.0.006
 
 ## Prerequisites and reproducible build
 
@@ -68,10 +68,20 @@ The overlay owner is detached on slideshow end/presentation close. Device connec
 - **Build cannot find VSTO/PIAs:** add the Visual Studio Office workload; use the provided script, not `dotnet build`.
 - **Ribbon absent:** verify the registered manifest exists, matching VSTO runtime is installed, and inspect PowerPoint Options → Add-ins → COM Add-ins/Disabled Items. Development certificate trust and organizational policy can prevent loading. Do not bypass organizational policy.
 - **No video:** use Status / diagnostics; check the executable path, Wireless debugging, network and current connection address. Use Forbind via Wi-Fi / QR to pair. The complete scrcpy distribution must be present. Reconnect with Start.
-- **Connected but hidden:** activate the one running slideshow, return from black/white/pause, and ensure the slide has an unrotated rectangle named `HJVTAK_ANDROID_LIVE` wholly inside it. A renamed, grouped, rotated or animated marker is unsupported.
+- **Connected but hidden:** use Forhåndsvisning while editing. During the one active slideshow, use the assigned tablet frame, wholly inside the slide. Blanked/paused/background shows hide all images. Duplicate frames for one device are rejected; grouping, rotation and marker animation remain unsupported.
 - **COM busy:** the overlay is hidden and retried on the next timer tick. No recurring modal error dialogs are shown.
 - **Settings:** `%LOCALAPPDATA%/HjvTak/AndroidLive/settings.xml`; corrupt/unreadable settings fall back to an empty configuration. Diagnostics are bounded in memory and shown only on request.
 
 See [TESTING.md](TESTING.md) for the opt-in PowerPoint smoke harness and remaining acceptance gates.
 
 See [WIFI.md](WIFI.md) for the QR protocol, cancellation and network troubleshooting. The helper is x64 even with 32-bit Office; preserve the full tools directory and license files when moving the build.
+
+## Multiple device implementation
+
+- DeviceProfiles persist stable IDs, names, explicit endpoints and audio/touch/orientation preferences. Old Serial settings migrate to the stable legacy profile.
+- DeviceStreams owns one independent ScrcpySession per profile. Stop/restart never kills other streams or the shared ADB server.
+- Shape tags store the profile ID, not its IP address. PowerPoint uppercases tag values; routing normalizes these IDs. Original untagged HJVTAK_ANDROID_LIVE frames map to the migrated legacy device.
+- A selected-device preview uses an owned external window without reparenting into Office. Slideshows hide the preview and place every connected device in its own frame; absent/duplicate/unsupported frames hide that device.
+- Asynchronous ADB preparation is cancellable per device. Ribbon callbacks establish the WinForms UI context before awaiting; all Office and window placement stays on the Office STA.
+- Manual orientation uses bounded, exact-device ADB wm size output and scrcpy capture locks @0/@90. Automatic omits that flag. Audio uses output capture; touches enable the control channel required by scrcpy while keyboard/mouse/gamepad and clipboard sync are disabled.
+- Options restart only the affected owned process. scrcpy has 1.5 seconds to exit gracefully before bounded cleanup; its Android cleanup restores the prior touch indicator setting.

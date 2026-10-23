@@ -17,7 +17,7 @@ namespace HjvTak.LiveAndroid
         internal string Diagnostics { get { lock (logLock) return log; } }
         internal IntPtr Window => window != IntPtr.Zero && process != null && NativeWindow.IsOwnedBy(window, process.Id) ? window : IntPtr.Zero;
 
-        internal void Start(string executable, string serial)
+        internal void Start(string executable, string serial, bool audio = false, bool touches = false, string orientation = null)
         {
             Stop();
             if (!Path.IsPathRooted(executable ?? "") || !File.Exists(executable) ||
@@ -25,7 +25,7 @@ namespace HjvTak.LiveAndroid
                 throw new InvalidOperationException("Choose the full path to the official scrcpy.exe in Settings.");
             title = "HJVTAK-LIVE-" + Guid.NewGuid().ToString("N");
             lock (logLock) log = "";
-            var start = new ProcessStartInfo(executable, ScrcpyArguments.Build(title, serial))
+            var start = new ProcessStartInfo(executable, ScrcpyArguments.Build(title, serial, audio, touches, orientation))
             {
                 WorkingDirectory = Path.GetDirectoryName(executable), UseShellExecute = false,
                 CreateNoWindow = true, RedirectStandardError = true, RedirectStandardOutput = true
@@ -71,7 +71,7 @@ namespace HjvTak.LiveAndroid
             try
             {
                 // Bounded wait only on explicit stop/shutdown/failure, never on each slide change.
-                if (!owned.HasExited && !owned.WaitForExit(250)) owned.Kill();
+                if (!owned.HasExited && !owned.WaitForExit(1500)) owned.Kill();
             }
             catch (InvalidOperationException) { }
             catch (Win32Exception ex) { lock (logLock) log += "Stop: " + ex.Message; }

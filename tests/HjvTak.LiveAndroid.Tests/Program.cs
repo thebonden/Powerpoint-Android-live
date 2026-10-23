@@ -157,6 +157,7 @@ internal static class Program
             }
         });
         ScrcpyDiscoveryTests.Run(Test);
+        MultiDeviceTests.Run(Test);
         Test("QR helper resolves outside the actual CLR shadow-copy folder", ShadowCopyProbe.Test);
         Console.WriteLine("Tests: " + passed + " passed, " + failed + " failed.");
         return failed == 0 ? 0 : 1;
@@ -184,6 +185,7 @@ internal static class Program
         if(!args.Take(4).SequenceEqual(new[]{"-H","localhost","-P","5037"}) ||
            Environment.GetEnvironmentVariable("ADB_SERVER_SOCKET")!="tcp:localhost:5037" ||
            Environment.GetEnvironmentVariable("ADB")!=typeof(Program).Assembly.Location)return 3;
+        if(args.Skip(4).SequenceEqual(new[]{"-s","10.0.0.8:4444","shell","wm","size"})) { Console.WriteLine("Physical size: 1200x1920"); return 0; }
         if(args.Skip(4).SequenceEqual(new[]{"connect","10.0.0.8:4444"})) { Console.WriteLine("connected"); return 0; }
         if(args.Skip(4).SequenceEqual(new[]{"-s","10.0.0.8:4444","get-state"})) { Console.WriteLine(scenario=="offline"?"offline":"device"); return 0; }
         return 4;

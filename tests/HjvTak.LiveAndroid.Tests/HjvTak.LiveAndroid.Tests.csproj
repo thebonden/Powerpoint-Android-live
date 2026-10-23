@@ -6,14 +6,14 @@
     <AssemblyName>HjvTak.LiveAndroid.Tests</AssemblyName><OutputPath>bin\$(Configuration)\</OutputPath>
     <ProjectGuid>{2F48DAE6-734C-4698-9020-1C5637F6B02A}</ProjectGuid>
   </PropertyGroup>
-  <ItemGroup><Reference Include="System"/><Reference Include="System.Core"/><Reference Include="System.Drawing"/><Reference Include="System.Windows.Forms"/></ItemGroup>
+  <ItemGroup><Reference Include="System"/><Reference Include="System.Core"/><Reference Include="System.Xml"/><Reference Include="System.Drawing"/><Reference Include="System.Windows.Forms"/></ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs"/>
+    <Compile Include="Program.cs"/><Compile Include="MultiDeviceTests.cs"/>
     <Compile Include="ScrcpyDiscoveryTests.cs"/>
     <Compile Include="ShadowCopyProbe.cs"/>
     <Compile Include="..\..\src\HjvTak.LiveAndroid.Core\*.cs"/>
     <Compile Include="..\..\src\HjvTak.LiveAndroid\NativeWindow.cs"/>
-    <Compile Include="..\..\src\HjvTak.LiveAndroid\ScrcpySession.cs"/>
+    <Compile Include="..\..\src\HjvTak.LiveAndroid\ScrcpySession.cs"/><Compile Include="..\..\src\HjvTak.LiveAndroid\DeviceStreams.cs"/><Compile Include="..\..\src\HjvTak.LiveAndroid\UserSettings.cs"/>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
 </Project>
