@@ -14,11 +14,11 @@ $msbuild = Join-Path $vs 'MSBuild\Current\Bin\MSBuild.exe'
 $version = $instance.installationVersion.Split('.')[0] + '.0'
 $artifacts = Join-Path $repo 'artifacts'
 New-Item -ItemType Directory -Force $artifacts | Out-Null
-$key = Join-Path $artifacts 'development.pfx'
+$key = Join-Path $artifacts 'androidlive-development.pfx'
 if (!(Test-Path $key)) {
     $rsa = [Security.Cryptography.RSA]::Create(2048)
     try {
-        $request = [Security.Cryptography.X509Certificates.CertificateRequest]::new('CN=HJVTAK Android Live Development Only', $rsa, [Security.Cryptography.HashAlgorithmName]::SHA256, [Security.Cryptography.RSASignaturePadding]::Pkcs1)
+        $request = [Security.Cryptography.X509Certificates.CertificateRequest]::new('CN=Android Live Development Only', $rsa, [Security.Cryptography.HashAlgorithmName]::SHA256, [Security.Cryptography.RSASignaturePadding]::Pkcs1)
         $oids = [Security.Cryptography.OidCollection]::new()
         [void]$oids.Add([Security.Cryptography.Oid]::new('1.3.6.1.5.5.7.3.3'))
         $request.CertificateExtensions.Add([Security.Cryptography.X509Certificates.X509EnhancedKeyUsageExtension]::new($oids,$false))
@@ -36,12 +36,12 @@ $signingCertificate.Dispose()
 # VSTO requires a manifest signing certificate. This disposable local key is never committed.
 # VSTO tooling may import it into CurrentUser\My and add a local inclusion-list entry.
 # The project overrides automatic Office registration; build never enables the add-in in PowerPoint.
-& $msbuild (Join-Path $repo 'src\HjvTak.LiveAndroid\HjvTak.LiveAndroid.csproj') /t:Build "/p:Configuration=$Configuration" "/p:VisualStudioVersion=$version" "/p:ManifestKeyFile=$key" "/p:ManifestCertificateThumbprint=$thumbprint" /v:minimal /nologo
+& $msbuild (Join-Path $repo 'src\AndroidLive\AndroidLive.csproj') /t:Build "/p:Configuration=$Configuration" "/p:VisualStudioVersion=$version" "/p:ManifestKeyFile=$key" "/p:ManifestCertificateThumbprint=$thumbprint" /v:minimal /nologo
 if ($LASTEXITCODE -ne 0) { throw 'VSTO build failed.' }
 if (!$SkipTests) {
-    & $msbuild (Join-Path $repo 'tests\HjvTak.LiveAndroid.Tests\HjvTak.LiveAndroid.Tests.csproj') /t:Build "/p:Configuration=$Configuration" /v:minimal /nologo
+    & $msbuild (Join-Path $repo 'tests\AndroidLive.Tests\AndroidLive.Tests.csproj') /t:Build "/p:Configuration=$Configuration" /v:minimal /nologo
     if ($LASTEXITCODE -ne 0) { throw 'Test build failed.' }
-    & (Join-Path $repo "tests\HjvTak.LiveAndroid.Tests\bin\$Configuration\HjvTak.LiveAndroid.Tests.exe")
+    & (Join-Path $repo "tests\AndroidLive.Tests\bin\$Configuration\AndroidLive.Tests.exe")
     if ($LASTEXITCODE -ne 0) { throw 'Tests failed.' }
 }
-Write-Host "Build completed: src\HjvTak.LiveAndroid\bin\$Configuration\HjvTak.LiveAndroid.vsto"
+Write-Host "Build completed: src\AndroidLive\bin\$Configuration\AndroidLive.vsto"

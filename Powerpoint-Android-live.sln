@@ -2,9 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HjvTak.LiveAndroid", "src\HjvTak.LiveAndroid\HjvTak.LiveAndroid.csproj", "{F62F48AA-940A-4D0A-AFB0-1E3D8A6D4B30}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AndroidLive", "src\AndroidLive\AndroidLive.csproj", "{F62F48AA-940A-4D0A-AFB0-1E3D8A6D4B30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HjvTak.LiveAndroid.Tests", "tests\HjvTak.LiveAndroid.Tests\HjvTak.LiveAndroid.Tests.csproj", "{2F48DAE6-734C-4698-9020-1C5637F6B02A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AndroidLive.Tests", "tests\AndroidLive.Tests\AndroidLive.Tests.csproj", "{2F48DAE6-734C-4698-9020-1C5637F6B02A}"
 EndProject
 Global
     GlobalSection(SolutionConfigurationPlatforms) = preSolution

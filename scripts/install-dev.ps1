@@ -3,7 +3,7 @@
 param([ValidateSet('Debug','Release')][string]$Configuration='Release')
 $ErrorActionPreference='Stop'
 $repo=Split-Path $PSScriptRoot -Parent
-$manifest=(Resolve-Path (Join-Path $repo "src\HjvTak.LiveAndroid\bin\$Configuration\HjvTak.LiveAndroid.vsto")).Path
+$manifest=(Resolve-Path (Join-Path $repo "src\AndroidLive\bin\$Configuration\AndroidLive.vsto")).Path
 $installer=Join-Path $env:CommonProgramFiles 'Microsoft Shared\VSTO\10.0\VSTOInstaller.exe'
 if(!(Test-Path $installer)){throw 'Microsoft Visual Studio Tools for Office Runtime is required.'}
 if(!$PSCmdlet.ShouldProcess($manifest,'Open the Microsoft VSTO installation dialog through the Windows desktop')){return}

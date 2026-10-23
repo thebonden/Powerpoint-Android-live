@@ -5,11 +5,11 @@ using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 
-namespace HjvTak.Setup
+namespace AndroidLive.Setup
 {
     internal static class PackageFiles
     {
-        internal const string Manifest="HjvTak.LiveAndroid.vsto";
+        internal const string Manifest="AndroidLive.vsto";
         internal static string Child(string root,string relative)
         {
             if(string.IsNullOrWhiteSpace(relative)||Path.IsPathRooted(relative)||relative.Contains(":"))

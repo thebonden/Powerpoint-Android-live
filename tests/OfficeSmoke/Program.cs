@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using HjvTak.LiveAndroid;
+using AndroidLive;
 using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 using Office = Microsoft.Office.Core;
 
@@ -16,7 +16,7 @@ internal static class Program
     {
         if (Process.GetProcessesByName("POWERPNT").Length != 0)
         { Console.Error.WriteLine("Close PowerPoint before this opt-in smoke test; existing sessions are never used."); return 2; }
-        if (args.Length != 1 || !File.Exists(args[0])) { Console.Error.WriteLine("Pass the full path to HjvTak.LiveAndroid.Tests.exe (fake scrcpy)."); return 2; }
+        if (args.Length != 1 || !File.Exists(args[0])) { Console.Error.WriteLine("Pass the full path to AndroidLive.Tests.exe (fake scrcpy)."); return 2; }
         PowerPoint.Application app = null;
         PowerPoint.Presentation deck = null;
         LiveAndroidController controller = null;

@@ -5,7 +5,7 @@
     <Reference Include="System"/><Reference Include="System.Core"/><Reference Include="System.Drawing"/><Reference Include="System.Windows.Forms"/>
     <Reference Include="Office, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c"><EmbedInteropTypes>true</EmbedInteropTypes></Reference>
     <Reference Include="Microsoft.Office.Interop.PowerPoint, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c"><EmbedInteropTypes>true</EmbedInteropTypes></Reference>
-    <Reference Include="HjvTak.LiveAndroid"><HintPath>..\..\src\HjvTak.LiveAndroid\bin\Debug\HjvTak.LiveAndroid.dll</HintPath></Reference>
+    <Reference Include="AndroidLive"><HintPath>..\..\src\AndroidLive\bin\Debug\AndroidLive.dll</HintPath></Reference>
     <Compile Include="Program.cs"/>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>

@@ -1,4 +1,13 @@
-# Validation — development version 0.0.101
+# Validation — development version 0.0.102
+
+## Neutral identity and central deployment — 2026-10-23
+
+- Local Release/package build passed native QR checks, 55 managed add-in test groups and 14 installer test groups. The actual EXE passed payload verification and CLI probes. Deployment scripts passed PowerShell syntax validation; both distribution archives were inspected. No 0.0.102 installation or Office registration change was performed by the agent.
+- Added cases for legacy settings migration without losing custom names/IDs, neutral-file precedence, corrupt neutral-file handling and old/new slide tags.
+- Added installer cases for old manifest recognition, strict managed CLI parsing, minimum-version detection, unsigned manifest refusal and prohibited DTDs.
+- Package verification exercises the actual EXE with --verify-package, invalid --silent and read-only --detect. It never installs/uninstalls Office.
+- Required manual acceptance: neutral branding in real PowerPoint, upgrade from an older installation, old PPTX routing, approved-certificate silent rollout in an IT pilot, missing-trust/dependency failure, running PowerPoint retry and user-context uninstall.
+- Central deployment is per-user. SYSTEM installation, automatic trust provisioning and machine-wide MSI are not implemented. No actual tenant rollout has occurred.
 
 ## Single-file installation — 2026-10-23
 
@@ -60,7 +69,7 @@ New manual checks:
 
 ## Normal-launch regression and installation correction (2026-10-22)
 
-- The user reproduced the missing ribbon after closing the successful test session and starting PowerPoint normally. The normal instance did not enumerate `HjvTak.LiveAndroid`; the Disabled Items list was empty. The earlier runtime check below therefore does **not** establish reliable installation.
+- The user reproduced the missing ribbon after closing the successful test session and starting PowerPoint normally. The normal instance did not enumerate `AndroidLive`; the Disabled Items list was empty. The earlier runtime check below therefore does **not** establish reliable installation.
 - A probe in the development process saw the HKCU add-in key with LoadBehavior 3. A separate read-only probe launched by the actual Explorer desktop, under the same user, reported that the key did not exist. This explains why a development-host launch succeeded while a desktop launch failed. Package-identity detection alone did not identify this registry-view difference.
 - Running the Microsoft installer through that desktop context required the normal user trust prompt for the locally signed development build; silent installation returned -300 and did not register the add-in. No trust/security setting was bypassed.
 - Added `scripts/install-dev.ps1` to open the official installation dialog through Explorer's desktop Application. Its `-WhatIf` validation passed against the existing Release build. Updated the low-level registration message and setup docs to avoid treating a private registry write or installer launch as successful installation.
@@ -68,7 +77,7 @@ New manual checks:
 
 ## PowerPoint runtime check (2026-10-22)
 
-- After the local package was installed with Microsoft's VSTOInstaller and all PowerPoint processes exited, a fresh PowerPoint launch reported `HjvTak.LiveAndroid` with `COMAddIn.Connect = true`. VSTO loader and CLR modules were loaded.
+- After the local package was installed with Microsoft's VSTOInstaller and all PowerPoint processes exited, a fresh PowerPoint launch reported `AndroidLive` with `COMAddIn.Connect = true`. VSTO loader and CLR modules were loaded.
 - In a new blank presentation, the **Android Live** tab was visually verified. Opening it displayed Add overlay marker, Forbind via Wi-Fi / QR, Start / reconnect, Stop Android, Show overlay, Settings and Status / diagnostics. The Settings dialog also opened.
 - Earlier sessions did not enumerate the add-in, and the Disabled Items list was empty. The successful later launch does not isolate the original cause; it does not prove that registry-only registration is sufficient on every machine.
 - No source or binary change was required for this successful load. It validates ribbon presence and the settings dialog only, not QR pairing, the live feed, marker behavior or slideshow rendering. Those hardware/interactive checks remain pending.
@@ -84,7 +93,7 @@ GitHub Actions runs the complete Release build and automated tests on `windows-2
 
 ## Automated test coverage
 
-`pwsh ./scripts/build.ps1` builds and runs `tests/HjvTak.LiveAndroid.Tests`. It is a dependency-free test executable returning a nonzero exit code on any failure.
+`pwsh ./scripts/build.ps1` builds and runs `tests/AndroidLive.Tests`. It is a dependency-free test executable returning a nonzero exit code on any failure.
 
 - Letterbox/pillarbox fitting, negative monitor origin, scaled marker, portrait slide and moved window.
 - Empty/invalid/nonfinite geometry and partly off-slide markers fail closed.
@@ -104,7 +113,7 @@ Close all PowerPoint sessions. From a **Visual Studio Developer PowerShell** on 
 ```powershell
 pwsh ./scripts/build.ps1
 msbuild tests/OfficeSmoke/OfficeSmoke.csproj /t:Build /v:minimal
-./tests/OfficeSmoke/bin/Debug/OfficeSmoke.exe "$PWD/tests/HjvTak.LiveAndroid.Tests/bin/Debug/HjvTak.LiveAndroid.Tests.exe"
+./tests/OfficeSmoke/bin/Debug/OfficeSmoke.exe "$PWD/tests/AndroidLive.Tests/bin/Debug/AndroidLive.Tests.exe"
 ```
 
 The harness refuses to use an existing PowerPoint process. It creates a temporary unsaved deck, exercises the real controller through COM with a fake Android process, and closes its own deck/application in `finally`. It checks marker idempotence, editing visibility, marked/unmarked slides, black/white screen, toggle and show end. Exit 0 = passed; 1 = failed; 2 = prerequisites/environment blocked. Foreground refusal is explicitly incomplete, never counted as a pass. This tests controller integration, not ribbon loading or real Android video.

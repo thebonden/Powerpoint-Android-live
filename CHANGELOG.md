@@ -1,5 +1,14 @@
 # Changes
 
+## 0.0.102 — 2026-10-23 (development)
+
+- Use neutral Android Live branding, assembly/project names, namespaces, settings paths and development certificate identity.
+- Retain old identifiers only in a compatibility class for registration migration, saved settings and existing slide routing.
+- Add explicit silent install/uninstall/detect commands, per-user deployment logs and return codes for central IT rollout.
+- Refuse service-account installation, avoid interactive prerequisite prompts in silent mode and check managed publisher trust before removing an older build.
+- Provide an IT ZIP with the same EXE, user-context install/uninstall wrappers, detection and Intune guidance.
+- Add regression coverage for old/new settings precedence, unchanged tablet names/IDs, legacy frame routing, CLI validation, manifest detection, DTD rejection and unsigned publisher refusal.
+
 ## 0.0.101 — 2026-10-23 (development)
 
 - Add one self-contained Windows installer EXE: no manual ZIP extraction or folder selection.

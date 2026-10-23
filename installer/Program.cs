@@ -8,32 +8,63 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using AndroidLive.Core;
 
-namespace HjvTak.Setup
+namespace AndroidLive.Setup
 {
     internal static class Program
     {
         [STAThread] private static int Main(string[] args)
         {
-            // Read-only package validation: never touches Office registration or launches installers.
-            if(args.Length==2 && args[0]=="--verify-package") {
+            CommandLine options;
+            try{options=CommandLine.Parse(args);}catch{return 87;}
+            if(options.Action==SetupAction.Verify) {
                 try {
-                    if(Directory.Exists(args[1]))throw new IOException("Verification directory must be new.");
+                    if(Directory.Exists(options.VerifyPath))return 87;
                     using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("payload.zip"))
-                        PackageFiles.Extract(stream,args[1],BuildInfo.PayloadHash);
-                    File.WriteAllText(Path.Combine(args[1],"verified.txt"),BuildInfo.Version);
+                        PackageFiles.Extract(stream,options.VerifyPath,BuildInfo.PayloadHash);
+                    File.WriteAllText(Path.Combine(options.VerifyPath,"verified.txt"),BuildInfo.Version);
                     return 0;
-                }catch{return 1;}
+                }catch{return 1603;}
             }
-            using(var mutex=new Mutex(false,@"Local\HjvTak.AndroidLive.Setup")) {
-                if(!mutex.WaitOne(0)){MessageBox.Show("Installationsprogrammet er allerede åbent.");return 1;}
+            // A per-user VSTO installation must not accidentally target SYSTEM's profile.
+            if(DeploymentPolicy.IsServiceAccount())return 1625;
+            if(options.Action==SetupAction.Detect) {
+                try{return Installation.IsInstalled()?0:1;}catch{return 1;}
+            }
+            using(var mutex=new Mutex(false,@"Local\AndroidLive.Setup")) {
+                bool acquired=false;
                 try {
+                    try{acquired=mutex.WaitOne(0);}catch(AbandonedMutexException){acquired=true;}
+                    if(!acquired) {
+                        if(!options.Silent)MessageBox.Show("Installationsprogrammet er allerede åbent.");
+                        return 1618;
+                    }
+                    if(options.Silent)return RunManaged(options);
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(false);
                     Application.Run(new SetupWindow());
-                }finally{mutex.ReleaseMutex();}
+                    return 0;
+                }finally{if(acquired)mutex.ReleaseMutex();}
             }
-            return 0;
+        }
+        private static int RunManaged(CommandLine options)
+        {
+            try {
+                string path=options.LogPath??Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"AndroidLive","Logs","deployment.log");
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                using(var writer=new StreamWriter(path,true,System.Text.Encoding.UTF8)) {
+                    writer.AutoFlush=true;
+                    Action<string> log=text=>writer.WriteLine(DateTime.UtcNow.ToString("O")+" "+text);
+                    log("Android Live "+BuildInfo.Version+" "+options.Action);
+                    try {
+                        var installation=new Installation(log,true);
+                        if(options.Action==SetupAction.Uninstall)installation.Uninstall();else installation.Run();
+                        log("Exit 0");return 0;
+                    }catch(SetupFailure ex){log("Exit "+ex.ExitCode+": "+ex.Message);return ex.ExitCode;}
+                    catch(Exception ex){log("Exit 1603: "+ex.Message);return 1603;}
+                }
+            }catch{return 1603;}
         }
     }
     internal sealed class SetupWindow : Form
@@ -71,14 +102,14 @@ namespace HjvTak.Setup
     }
     internal sealed class Installation
     {
-        private const string AddinKey=@"Software\Microsoft\Office\PowerPoint\Addins\HjvTak.LiveAndroid";
+        private const string AddinKey=@"Software\Microsoft\Office\PowerPoint\Addins\AndroidLive";
         private readonly Action<string> log;
-        internal Installation(Action<string> progress){log=progress;}
+        private readonly bool silent;
+        internal Installation(Action<string> progress,bool silentMode=false){log=progress;silent=silentMode;}
         private static bool PowerPointOpen()
         {
-            int session=Process.GetCurrentProcess().SessionId;
             foreach(var process in Process.GetProcessesByName("POWERPNT"))
-                using(process){try{if(process.SessionId==session)return true;}catch(InvalidOperationException){}}
+                using(process){try{if(!process.HasExited)return true;}catch(InvalidOperationException){}}
             return false;
         }
         private static string RegistryValue(RegistryHive hive,RegistryView view,string key,string value)
@@ -121,22 +152,24 @@ namespace HjvTak.Setup
             Uri uri;
             if(string.IsNullOrEmpty(value))return null;
             if(!Uri.TryCreate(value,UriKind.Absolute,out uri)||!uri.IsFile||uri.IsUnc ||
-                !Path.GetFileName(uri.LocalPath).Equals(PackageFiles.Manifest,StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("Den tidligere installation bruger en ukendt placering. Fjern HJVTAK Android Live via Installerede apps, og prøv igen.");
+                !(Path.GetFileName(uri.LocalPath).Equals(PackageFiles.Manifest,StringComparison.OrdinalIgnoreCase)||
+                  Path.GetFileName(uri.LocalPath).Equals(LegacyCompatibility.Manifest,StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException("Den tidligere installation bruger en ukendt placering. Fjern Android Live via Installerede apps, og prøv igen.");
             return uri.LocalPath;
         }
         private static string PreviousManifest()
         {
-            var values=new[]{RegistryView.Registry64,RegistryView.Registry32}.Select(view=>
-                LocalManifest(RegistryValue(RegistryHive.CurrentUser,view,AddinKey,"Manifest")))
+            var keys=new[]{AddinKey,@"Software\Microsoft\Office\PowerPoint\Addins\"+LegacyCompatibility.ProductId};
+            var values=keys.SelectMany(key=>new[]{RegistryView.Registry64,RegistryView.Registry32}.Select(view=>
+                LocalManifest(RegistryValue(RegistryHive.CurrentUser,view,key,"Manifest"))))
                 .Where(value=>value!=null).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             if(values.Length>1)throw new InvalidOperationException("Der er registreret flere forskellige Android Live-installationer. Fjern dem via Installerede apps først.");
             return values.FirstOrDefault();
         }
-        private static int Execute(string executable,string arguments)
+        private int Execute(string executable,string arguments)
         {
             using(var process=Process.Start(new ProcessStartInfo(executable,arguments){
-                UseShellExecute=true,WorkingDirectory=Path.GetDirectoryName(executable)})) {
+                UseShellExecute=!silent,CreateNoWindow=silent,WorkingDirectory=Path.GetDirectoryName(executable)})) {
                 if(process==null)throw new InvalidOperationException("Microsofts installationsprogram kunne ikke startes.");
                 process.WaitForExit();return process.ExitCode;
             }
@@ -146,12 +179,37 @@ namespace HjvTak.Setup
             if(path.Contains('"')||path.Contains('\r')||path.Contains('\n'))throw new ArgumentException("Ugyldig sti.");
             return "\""+path+"\"";
         }
+        private static string CurrentManifest()
+        {
+            foreach(var view in new[]{RegistryView.Registry64,RegistryView.Registry32}) {
+                string value=RegistryValue(RegistryHive.CurrentUser,view,AddinKey,"Manifest");
+                if(!string.IsNullOrEmpty(value))return LocalManifest(value);
+            }
+            return null;
+        }
+        internal static bool IsInstalled()
+        {
+            string expected=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"AndroidLive","App",PackageFiles.Manifest);
+            return string.Equals(CurrentManifest(),expected,StringComparison.OrdinalIgnoreCase) &&
+                DeploymentPolicy.MeetsVersion(expected,BuildInfo.Version+".0");
+        }
+        internal void Uninstall()
+        {
+            if(PowerPointOpen())throw new SetupFailure(1618,"PowerPoint er åbent. Prøv afinstallation igen senere.");
+            string current=CurrentManifest();
+            if(current==null){log("Android Live er ikke installeret for denne bruger.");return;}
+            string installer=VstoInstaller();
+            if(installer==null)throw new SetupFailure(1603,"VSTO Runtime mangler.");
+            int result=Execute(installer,"/Uninstall "+Quote(current)+" /Silent");
+            if(result!=0||CurrentManifest()!=null)throw new SetupFailure(1603,"Office-afinstallationen kunne ikke bekræftes. VSTO-kode "+result);
+            log("Office-tilføjelsen er fjernet. Tabletindstillinger, præsentationer og programbackups bevares.");
+        }
         internal void Run()
         {
             if(!Environment.Is64BitOperatingSystem)throw new InvalidOperationException("Android Live kræver Windows 10/11, 64-bit.");
-            if(PowerPointOpen())throw new InvalidOperationException("Gem dit arbejde, luk alle PowerPoint-vinduer, og prøv igen.");
+            if(PowerPointOpen())throw new SetupFailure(1618,"PowerPoint er åbent. Installationen kan forsøges igen, når PowerPoint er lukket.");
             if(!PowerPointInstalled())throw new InvalidOperationException("Microsoft PowerPoint til Windows blev ikke fundet. Installer desktop-udgaven først.");
-            string root=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"HjvTak","AndroidLive");
+            string root=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"AndroidLive");
             string current=Path.Combine(root,"App");
             string suffix=Guid.NewGuid().ToString("N").Substring(0,8);
             string stage=Path.Combine(root,"stage-"+suffix),backup=Path.Combine(root,"backup-"+suffix),failed=Path.Combine(root,"failed-"+suffix);
@@ -164,19 +222,21 @@ namespace HjvTak.Setup
             using(var stream=Assembly.GetExecutingAssembly().GetManifestResourceStream("payload.zip"))
                 PackageFiles.Extract(stream,stage,BuildInfo.PayloadHash);
             if(!FrameworkReady()||VstoInstaller()==null) {
+                if(silent)throw new SetupFailure(1603,"IT skal installere .NET Framework 4.8 og VSTO Runtime som forudsætninger. Ingen dialog er åbnet.");
                 log("Microsoft kontrollerer de nødvendige komponenter. Følg det nye vindue.");
                 int prerequisites=Execute(Path.Combine(stage,"prerequisites.exe"),"");
                 if(prerequisites==3010||prerequisites==1641)throw new InvalidOperationException("Genstart Windows, og kør denne installationsfil igen.");
                 if(prerequisites!=0||!FrameworkReady()||VstoInstaller()==null)
                     throw new InvalidOperationException("Microsoft-komponenterne blev ikke installeret. Prøv igen, eller kontakt din IT-afdeling.");
             }
-            if(PowerPointOpen())throw new InvalidOperationException("PowerPoint blev åbnet. Luk det, og prøv igen.");
+            if(PowerPointOpen())throw new SetupFailure(1618,"PowerPoint blev åbnet. Installationen kan forsøges igen senere.");
+            if(silent)DeploymentPolicy.RequireManagedTrust(Path.Combine(stage,PackageFiles.Manifest));
             string installer=VstoInstaller();
             string old=PreviousManifest();
             bool removed=false,moved=false,newInstalled=false;
             try {
                 if(old!=null) {
-                    if(!File.Exists(old))throw new InvalidOperationException("Den tidligere installationsmappe mangler. Fjern HJVTAK Android Live via Installerede apps, og prøv igen.");
+                    if(!File.Exists(old))throw new InvalidOperationException("Den tidligere installationsmappe mangler. Fjern Android Live via Installerede apps, og prøv igen.");
                     log("Opdaterer den tidligere Office-tilføjelse. Tabletindstillingerne bevares…");
                     int code=Execute(installer,"/Uninstall "+Quote(old)+" /Silent");
                     if(code!=0)throw new InvalidOperationException("Den tidligere Office-tilføjelse kunne ikke fjernes (kode "+code+"). Intet nyt er installeret.");
@@ -184,7 +244,7 @@ namespace HjvTak.Setup
                 }
                 PackageFiles.MoveIntoPlace(stage,current,backup);moved=true;
                 log("Installerer Android Live "+BuildInfo.Version+". Følg Microsofts installationsvindue.");
-                int installed=Execute(installer,"/Install "+Quote(Path.Combine(current,PackageFiles.Manifest)));
+                int installed=Execute(installer,"/Install "+Quote(Path.Combine(current,PackageFiles.Manifest))+(silent?" /Silent":""));
                 if(installed!=0)throw new InvalidOperationException("Microsoft afsluttede ikke installationen (kode "+installed+").");
                 newInstalled=true;
                 string registered=PreviousManifest();
