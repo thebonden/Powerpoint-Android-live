@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -7,59 +9,210 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using HjvTak.LiveAndroid.Core;
 using Office = Microsoft.Office.Core;
+using PowerPoint = Microsoft.Office.Interop.PowerPoint;
 
 namespace HjvTak.LiveAndroid
 {
-    [ComVisible(true)]
-    public sealed class AndroidRibbon : Office.IRibbonExtensibility
+    /// <summary>Independent external windows per device; all Office access stays on the STA.</summary>
+    public sealed class LiveAndroidController : IDisposable
     {
-        private readonly ThisAddIn addIn;
-        private Office.IRibbonUI ribbon;
-        private UserSettings settings = UserSettings.Load();
-        private bool busy;
-        internal AndroidRibbon(ThisAddIn addIn){this.addIn=addIn;}
-        public string GetCustomUI(string ribbonId)
+        public const string Version = "0.0.006";
+        public const string AnchorName = "HJVTAK_ANDROID_LIVE";
+        private const string DeviceTag = "HJVTAK_ANDROID_DEVICE";
+        private readonly PowerPoint.Application app;
+        private readonly DeviceStreams streams = new DeviceStreams();
+        private readonly Dictionary<string, CancellationTokenSource> pending = new Dictionary<string, CancellationTokenSource>();
+        private readonly Dictionary<string,string> names = new Dictionary<string,string>();
+        private readonly System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer { Interval = 100 };
+        private readonly PreviewWindow preview = new PreviewWindow();
+        private readonly int uiThread = Thread.CurrentThread.ManagedThreadId;
+        private bool enabled = true, disposed, previewRequested;
+        private string selectedId = "legacy";
+        private DateTime resumeAfter;
+        private bool transitionPending;
+        private string alignment = "Forbind en tablet, og indsæt dens ramme på en slide.";
+        public event EventHandler StatusChanged;
+        public string Status => string.Join("\n", streams.All.Select(s => Name(s.Key) + ": " + s.Value.Status.Detail)) + "\n" + alignment;
+        public string Diagnostics => string.Join("\n\n", streams.All.Select(s => Name(s.Key) + ":\n" + s.Value.Diagnostics));
+        public bool IsActive => pending.Count != 0 || streams.All.Any(s => Active(s.Value));
+        public bool OverlayEnabled => enabled;
+        public bool PreviewEnabled => previewRequested;
+        internal bool IsDeviceActive(string id) => id != null && (pending.ContainsKey(id) || Active(streams.Get(id)));
+        private static bool Active(ScrcpySession session) => session != null &&
+            (session.Status.State == DeviceState.Starting || session.Status.State == DeviceState.Running);
+        private string Name(string id) => names.TryGetValue(id,out var name) ? name : id;
+
+        public LiveAndroidController(PowerPoint.Application application)
         {
-            using(var stream=typeof(AndroidRibbon).Assembly.GetManifestResourceStream("HjvTak.LiveAndroid.AndroidRibbon.xml"))
-            using(var reader=new StreamReader(stream))return reader.ReadToEnd();
+            app = application ?? throw new ArgumentNullException(nameof(application));
+            app.SlideShowBegin += OnShowChanged;
+            app.SlideShowNextSlide += OnShowChanged;
+            app.SlideShowEnd += OnShowEnd;
+            app.PresentationClose += OnPresentationClose;
+            preview.Dismissed += (s,e) => { previewRequested=false; streams.HideAll(); Changed(); };
+            timer.Tick += OnTick; timer.Start();
         }
-        public void OnLoad(Office.IRibbonUI ui){ribbon=ui;}
-        internal void Refresh(){try{ribbon?.Invalidate();}catch(COMException){}}
-        public bool GetEnabled(Office.IRibbonControl control)
+        // Compatibility entry for the optional Office harness, with no editing preview.
+        public void StartDevice(string executable, string serial)
         {
-            var controller=addIn.Controller;if(controller==null)return false;
-            if(control.Id=="StopAll")return controller.IsActive;
-            if(control.Id=="StopAndroid")return controller.IsDeviceActive(settings.SelectedDeviceId);
-            if(busy)return false;
-            if(control.Id=="AddTablet"||control.Id=="Settings"||control.Id=="Status"||control.Id=="ShowOverlay")return true;
-            if(control.Id=="StartAll")return settings.Devices.Count>0;
-            return settings.Selected!=null;
+            EnsureThread(); streams.Start("legacy",executable,serial,false,false,null); enabled=true; Changed();
         }
-        public bool GetPressed(Office.IRibbonControl control)
+        internal IntPtr VideoWindow(string id) => streams.Get(id)?.Window ?? IntPtr.Zero;
+        internal void SelectDevice(DeviceProfile profile)
         {
-            if(control.Id=="Audio")return settings.Selected?.Audio??false;
-            if(control.Id=="Touches")return settings.Selected?.ShowTouches??false;
-            if(control.Id=="Preview")return addIn.Controller?.PreviewEnabled??false;
-            return addIn.Controller?.OverlayEnabled??false;
+            EnsureThread(); if(profile==null)return;
+            selectedId=profile.Id; names[profile.Id]=profile.Name; Changed();
         }
-        public int GetDeviceCount(Office.IRibbonControl control)=>Math.Max(1,settings.Devices.Count);
-        public string GetDeviceLabel(Office.IRibbonControl control,int index)=>settings.Devices.Count==0?"Tilføj en tablet":settings.Devices[index].Name;
-        public string GetDeviceId(Office.IRibbonControl control,int index)=>settings.Devices.Count==0?"NoDevice":settings.Devices[index].Id;
-        public int GetDeviceIndex(Office.IRibbonControl control)=>Math.Max(0,settings.Devices.FindIndex(d=>d.Id==settings.SelectedDeviceId));
-        public void OnDeviceSelected(Office.IRibbonControl control,string id,int index)
+        internal async Task StartDeviceAsync(string executable, DeviceProfile profile, bool showPreview = true)
         {
-            Run(()=>{if(index<0||index>=settings.Devices.Count)return;
-                settings.SelectedDeviceId=settings.Devices[index].Id;settings.Save();addIn.Controller.SelectDevice(settings.Selected);});
+            EnsureThread();
+            if (!WifiEndpoint.IsValid(profile.Endpoint)) throw new ArgumentException("Forbind tabletten med QR først.");
+            StopDevice(profile.Id);
+            var cancel = new CancellationTokenSource();
+            pending[profile.Id]=cancel;
+            string id=profile.Id, endpoint=profile.Endpoint;
+            bool audio=profile.Audio, touches=profile.ShowTouches;
+            var orientation=profile.Orientation;
+            names[id]=profile.Name; Changed();
+            try
+            {
+                await new WifiConnector(Path.Combine(Path.GetDirectoryName(executable),"adb.exe"),"").ConnectAsync(endpoint,cancel.Token);
+                string capture = await CaptureOrientation.ResolveAsync(Path.Combine(Path.GetDirectoryName(executable),"adb.exe"),
+                    endpoint,orientation,cancel.Token);
+                cancel.Token.ThrowIfCancellationRequested();
+                EnsureThread();
+                streams.Start(id,executable,endpoint,audio,touches,capture);
+                selectedId=id; if(showPreview){enabled=true;previewRequested=true;}
+            }
+            finally
+            {
+                if(pending.TryGetValue(id,out var current) && ReferenceEquals(current,cancel))pending.Remove(id);
+                cancel.Dispose();
+                if(!disposed)Changed();
+            }
         }
-        public int GetOrientation(Office.IRibbonControl control)=>(int)(settings.Selected?.Orientation??VideoOrientation.Automatic);
-        public void OnOrientation(Office.IRibbonControl control,string id,int index)
-        { if(index<0||index>2)return;ChangeOptions(d=>d.Orientation=(VideoOrientation)index); }
-        public void OnAudio(Office.IRibbonControl control,bool pressed){ChangeOptions(d=>d.Audio=pressed);}
-        public void OnTouches(Office.IRibbonControl control,bool pressed){ChangeOptions(d=>d.ShowTouches=pressed);}
-        private void ChangeOptions(Action<DeviceProfile> change)
+        internal void StopDevice(string id)
         {
-            RunAsync(async()=>{
-                var device=settings.Select…8048 tokens truncated…       transition=slide.SlideShowTransition;
+            EnsureThread();
+            if(id==null)return;
+            if(pending.TryGetValue(id,out var cancel)){pending.Remove(id);cancel.Cancel();}
+            streams.Stop(id);
+            if(selectedId==id)preview.Hide();
+            Changed();
+        }
+        public void StopDevice()
+        {
+            EnsureThread();
+            foreach(var cancel in pending.Values.ToArray())cancel.Cancel();
+            pending.Clear(); streams.Dispose(); preview.Hide(); previewRequested=false; Changed();
+        }
+        public void ToggleOverlay()
+        { EnsureThread(); enabled=!enabled; if(!enabled){streams.HideAll();preview.Hide();} Changed(); }
+        internal void TogglePreview()
+        { EnsureThread(); previewRequested=!previewRequested; if(!previewRequested){preview.Hide();streams.HideAll();} Changed(); }
+        public void AddAnchorToCurrentSlide() => AddAnchorToCurrentSlide(new DeviceProfile{Id="legacy",Name="Tablet"});
+        internal void AddAnchorToCurrentSlide(DeviceProfile device)
+        {
+            EnsureThread();
+            PowerPoint.DocumentWindow document=null; PowerPoint.View view=null; PowerPoint.Slide slide=null;
+            PowerPoint.Presentation presentation=null; PowerPoint.PageSetup page=null; PowerPoint.Shapes shapes=null;
+            PowerPoint.Shape shape=null; PowerPoint.TextFrame text=null; PowerPoint.TextRange range=null; PowerPoint.Tags tags=null;
+            try
+            {
+                document=app.ActiveWindow;
+                if(document==null || (document.ViewType!=PowerPoint.PpViewType.ppViewNormal && document.ViewType!=PowerPoint.PpViewType.ppViewSlide))
+                    throw new InvalidOperationException("Åbn sliden i normal redigeringsvisning først.");
+                view=document.View; slide=view.Slide as PowerPoint.Slide;
+                if(slide==null)throw new InvalidOperationException("Vælg en slide først.");
+                shapes=slide.Shapes;
+                int count=0;
+                for(int i=1;i<=shapes.Count;i++)
+                {
+                    var candidate=shapes[i];
+                    string id=MarkerDevice(candidate);
+                    if(id==device.Id){shape=candidate;shape.Select();return;}
+                    if(id!=null)count++;
+                    Release(candidate);
+                }
+                presentation=document.Presentation; page=presentation.PageSetup;
+                float left=page.SlideWidth*(count%2==0 ? .06f : .53f);
+                float top=page.SlideHeight*(count%4<2 ? .10f : .55f);
+                shape=shapes.AddShape(Office.MsoAutoShapeType.msoShapeRectangle,left,top,page.SlideWidth*.40f,page.SlideHeight*.35f);
+                shape.Name=device.Id=="legacy"?AnchorName:AnchorName+"_"+device.Id;
+                tags=shape.Tags; tags.Add(DeviceTag,device.Id);
+                shape.AlternativeText="Live tablet: "+device.Name+". Eksternt vindue; medtages ikke i PowerPoint-eksport.";
+                text=shape.TextFrame; range=text.TextRange;
+                range.Text=device.Name+"\nLivebillede under slideshow\n"+Version;
+                shape.Select();
+            }
+            finally { Release(tags);Release(range);Release(text);Release(shape);Release(shapes);Release(page);Release(presentation);Release(slide);Release(view);Release(document); }
+        }
+        private static string MarkerDevice(PowerPoint.Shape shape)
+        {
+            PowerPoint.Tags tags=null;
+            try {
+                tags=shape.Tags; string id=tags[DeviceTag];
+                if(!string.IsNullOrEmpty(id))return id.ToLowerInvariant(); // PowerPoint normalizes tag values to uppercase.
+                return shape.Name==AnchorName?"legacy":null;
+            } finally {Release(tags);}
+        }
+        private void OnShowChanged(PowerPoint.SlideShowWindow show)
+        { streams.HideAll();preview.Hide();resumeAfter=DateTime.UtcNow.AddMilliseconds(250);transitionPending=true; }
+        private void OnShowEnd(PowerPoint.Presentation presentation)
+        { HideAndDetach();previewRequested=false;alignment="Slideshow afsluttet; billeder skjult."; }
+        private void OnPresentationClose(PowerPoint.Presentation presentation)
+        { HideAndDetach();previewRequested=false; }
+        private void HideAndDetach()
+        { preview.Hide();foreach(var item in streams.All){item.Value.Hide();NativeWindow.DetachOwner(item.Value.Window);} }
+        private void OnTick(object sender,EventArgs args)
+        {
+            if(disposed)return;
+            string previous=Status;
+            try {foreach(var item in streams.All)item.Value.Poll();Align();}
+            catch(COMException){HideAndDetach();alignment="PowerPoint er optaget; billeder skjult.";}
+            catch(InvalidComObjectException){HideAndDetach();alignment="PowerPoint-vinduet er lukket.";}
+            catch(Exception ex){HideAndDetach();alignment="Billeder skjult: "+ex.Message;}
+            if(Status!=previous)Changed();
+        }
+        private void AlignPreview()
+        {
+            var session=streams.Get(selectedId);
+            foreach(var item in streams.All)if(item.Key!=selectedId)item.Value.Hide();
+            var host=new IntPtr(app.HWND);
+            bool show=previewRequested && session?.Status.State==DeviceState.Running &&
+                NativeWindow.IsWindowVisible(host) && !NativeWindow.IsIconic(host) && NativeWindow.IsHostForeground(host);
+            if(!show){preview.Hide();session?.Hide();alignment="Start slideshow med tabletrammer, eller vælg Forhåndsvisning.";return;}
+            preview.Text=Name(selectedId)+" · Forhåndsvisning";
+            if(!preview.Visible)preview.Show(new WindowOwner(host));
+            if(preview.WindowState==FormWindowState.Minimized){session.Hide();return;}
+            using(new NativeWindow.DpiScope())
+                if(!NativeWindow.Place(session.Window,preview.Handle,preview.VideoBounds))session.Hide();
+            alignment="Forhåndsvisning. Under slideshow vises hver tablet i sin ramme.";
+        }
+        private void Align()
+        {
+            if(!enabled || DateTime.UtcNow<resumeAfter){streams.HideAll();preview.Hide();return;}
+            PowerPoint.SlideShowWindows shows=null;PowerPoint.SlideShowWindow show=null;PowerPoint.SlideShowView view=null;
+            PowerPoint.Slide slide=null;PowerPoint.Shapes shapes=null;PowerPoint.Presentation presentation=null;PowerPoint.PageSetup page=null;
+            var markers=new Dictionary<string,PowerPoint.Shape>();
+            var duplicate=new HashSet<string>();
+            try
+            {
+                shows=app.SlideShowWindows;
+                if(shows.Count==0){AlignPreview();return;}
+                preview.Hide();
+                if(shows.Count!=1){streams.HideAll();alignment="Flere slideshows åbne; kør ét ad gangen.";return;}
+                show=shows[1];var hwnd=new IntPtr(show.HWND);view=show.View;
+                bool normal=view.State==PowerPoint.PpSlideShowState.ppSlideShowRunning;
+                bool visible=NativeWindow.IsWindowVisible(hwnd)&&!NativeWindow.IsIconic(hwnd);
+                bool foreground=NativeWindow.IsHostForeground(hwnd);
+                if(!normal||!visible||!foreground){streams.HideAll();alignment="Billeder skjult: slideshow blankt, pauset eller i baggrunden.";return;}
+                slide=view.Slide;
+                if(transitionPending)
+                {
+                    PowerPoint.SlideShowTransition transition=null;
+                    try {
+                        transition=slide.SlideShowTransition;
                         double duration=transition.EntryEffect==PowerPoint.PpEntryEffect.ppEffectNone?0:transition.Duration;
                         resumeAfter=DateTime.UtcNow.AddSeconds(Math.Max(0,Math.Min(60,duration)));
                         transitionPending=false;streams.HideAll();return;
