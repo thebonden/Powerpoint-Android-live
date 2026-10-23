@@ -1,4 +1,4 @@
-# Windows development — 0.0.003
+# Windows development — 0.0.004
 
 ## Prerequisites and reproducible build
 
@@ -52,6 +52,7 @@ The script retains source/build files, certificates and settings. To switch betw
 
 - `ThisAddIn.Designer.*`: standard VSTO host bootstrap based on the installed Microsoft PowerPoint add-in template.
 - `ThisAddIn.cs`: controller lifetime and ribbon creation.
+- `ScrcpySetupDialog.cs` and core `ScrcpyLocator`: background discovery, completeness checks, installation guidance and retry.
 - `WifiDialog.cs` and core `WifiConnector`, `LocalCommand`, `WifiEndpoint`: QR/reconnect dialog, bounded asynchronous commands and strict endpoint/result validation.
 - `native/WifiQr`: independently built GPL QR helper and MIT QR generator adapted from the working OBS project; no OBS runtime dependency.
 - `AndroidRibbon.*`, `SettingsDialog.cs`, `UserSettings.cs`: ribbon callbacks, configuration and per-user XML settings.

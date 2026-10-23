@@ -1,5 +1,15 @@
 # Changes
 
+## 0.0.004 — 2026-10-22 (development)
+
+- Discover complete scrcpy installations automatically before QR pairing/reconnect; remember the discovered path.
+- Search PATH and bounded local installation/extraction locations in the background; skip incomplete packages and unrelated directories.
+- Ask the user to install scrcpy when missing, with official installation guidance, Search again and manual selection. Add Find automatically to Settings.
+- Validate required adjacent ADB/server/DLL files and add six discovery regression groups (33 managed groups total).
+- Retain the desktop-context VSTO installation flow introduced while diagnosing normal-launch registration visibility.
+
+Numeric assembly/ClickOnce version: `0.0.4.0`. Real tablet/slideshow acceptance remains pending.
+
 ## 0.0.003 — 2026-10-22 (development)
 
 - Add PowerPoint **Forbind via Wi-Fi / QR** and verified **Start / reconnect** workflow; no USB or OBS Studio is required.

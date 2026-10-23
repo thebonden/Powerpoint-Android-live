@@ -1,6 +1,12 @@
-# Wi-Fi / QR connection — 0.0.003
+# Wi-Fi / QR connection — 0.0.004
 
 PowerPoint is standalone. It launches its own small QR helper; no OBS installation, running OBS process or plugin is needed. The helper reuses the working QR-pairing logic from the user's OBS project, with its source and license preserved in `native/WifiQr/NOTICE.md`.
+
+## Automatic scrcpy setup
+
+Before opening QR pairing, PowerPoint checks the saved scrcpy path and, when it is absent/incomplete, searches in the background. It reads fresh user/machine/process PATH values and checks local WinGet packages, Program Files, local Programs, Downloads, Desktop and supported package locations. Search is limited to two levels of scrcpy-named folders (up to 512 child directories per level); it does not scan the whole disk or network shares and does not execute candidate programs. Custom or redirected extraction locations can be selected manually.
+
+A candidate must include scrcpy.exe, adjacent adb.exe and scrcpy-server, plus SDL, avcodec, avformat and avutil DLLs. This is a completeness check, not signature verification. A valid saved selection takes precedence. If no package qualifies, the Danish setup dialog asks the user to install scrcpy and opens only the official installation guide when the user clicks **Installér scrcpy…**. It does not download or run an installer automatically. **Søg igen** reads the locations again without requiring a PowerPoint restart. Cancel does not start pairing or change the saved path.
 
 ## Workflow
 

@@ -35,9 +35,10 @@ namespace HjvTak.LiveAndroid
         {
             Run(() => {
                 var settings = UserSettings.Load();
-                if (string.IsNullOrEmpty(settings.ScrcpyPath) || !File.Exists(settings.ScrcpyPath))
+                if (!Core.ScrcpyLocator.IsComplete(settings.ScrcpyPath))
                 {
-                    using (var dialog = new SettingsDialog(settings)) if (dialog.ShowDialog() != DialogResult.OK) return;
+                    using (var dialog = new ScrcpySetupDialog(settings)) if (dialog.ShowDialog() != DialogResult.OK) return;
+                    settings.Save();
                 }
                 using (var dialog = new WifiDialog(settings.ScrcpyPath, settings.Serial, reconnect))
                 {
@@ -55,7 +56,7 @@ namespace HjvTak.LiveAndroid
         public void OnStatus(Office.IRibbonControl control)
         {
             Run(() => MessageBox.Show(addIn.Controller.Status + "\n\n" + addIn.Controller.Diagnostics +
-                "\n\n0.0.003 development build. This overlay is not saved as video in the PPTX or included in PowerPoint exports.",
+                "\n\n0.0.004 development build. This overlay is not saved as video in the PPTX or included in PowerPoint exports.",
                 "Android Live status", MessageBoxButtons.OK, MessageBoxIcon.Information));
         }
         private void Run(Action action)

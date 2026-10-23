@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="OnLoad">
   <ribbon><tabs><tab id="AndroidLiveTab" label="Android Live">
-    <group id="AndroidLiveControls" label="Android overlay · 0.0.003">
+    <group id="AndroidLiveControls" label="Android overlay · 0.0.004">
       <button id="AddMarker" label="Add overlay marker" imageMso="ShapeRectangle" size="large" onAction="OnAddMarker" getEnabled="GetEnabled" supertip="Adds or selects the marker on this slide. Move and resize it in Normal view." />
       <button id="ConnectWifi" label="Forbind via Wi-Fi / QR" size="large" onAction="OnConnectWifi" getEnabled="GetEnabled" supertip="Scan QR-koden fra Androids Trådløs fejlfinding. Kræver ingen USB eller OBS Studio." />
       <button id="StartAndroid" label="Start / reconnect" imageMso="Play" size="large" onAction="OnStart" getEnabled="GetEnabled" />

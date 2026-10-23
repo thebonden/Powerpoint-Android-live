@@ -1,6 +1,6 @@
 # HJVTAK PowerPoint Android Live
 
-**0.0.003 — development build, not accepted for production use.**
+**0.0.004 — development build, not accepted for production use.**
 
 A standalone Windows PowerPoint VSTO add-in for teaching from slides while showing a live Android tablet screen. Pair over **Wi-Fi with a QR code directly from PowerPoint**. No USB connection, OBS Studio, OBS plugin, camera bridge or Android Studio installation is required.
 
@@ -22,9 +22,9 @@ This builds the QR helper from source, checks its vendored QR-generator hashes, 
 
 ## Connect your tablet wirelessly
 
-1. Extract the [official scrcpy Windows distribution](https://github.com/Genymobile/scrcpy/blob/master/doc/windows.md), keeping `scrcpy.exe`, `adb.exe`, its DLLs and support files together. OBS does not need to be installed.
+1. Click **Forbind via Wi-Fi / QR**. PowerPoint automatically finds an existing complete scrcpy installation. If none is found, **Installér scrcpy…** opens the [official Windows installation instructions](https://github.com/Genymobile/scrcpy/blob/master/doc/windows.md); install or extract the complete package and click **Søg igen**. OBS is not required.
 2. Connect PC and tablet to the same local Wi-Fi. On Android 11+, enable Developer options → **Wireless debugging**. The network must permit communication between the devices and mDNS discovery. [Android's wireless-debugging instructions](https://developer.android.com/tools/adb#connect-to-a-device-over-wi-fi).
-3. In PowerPoint, open **Android Live → Settings** and select `scrcpy.exe`.
+3. The discovered location is remembered automatically. **Settings → Find automatisk** can search again; selecting a file manually remains available for custom locations.
 4. Click **Forbind via Wi-Fi / QR**. On the tablet choose **Pair device with QR code** inside Wireless debugging, then scan the displayed code using that scanner (not the ordinary camera app).
 5. Pairing locates the exact tablet and its connection port. PowerPoint verifies that it is online, saves that connection address and starts scrcpy automatically. No USB setup is needed.
 6. Use **Add overlay marker** on the desired slide, move/resize the rectangle, then start the slideshow. Use **Show overlay** to hide it or **Stop Android** to stop the feed.
@@ -47,4 +47,4 @@ Audio and computer-to-tablet input are disabled. Use the tablet directly; advanc
 
 The QR helper's reused GPL-2.0-or-later code and MIT QR generator retain their licenses and source under `native/WifiQr`. Keep corresponding helper source with any redistribution. CI provides both binary and helper-source artifacts.
 
-User version **0.0.003** maps to assembly/ClickOnce **0.0.3.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**
+User version **0.0.004** maps to assembly/ClickOnce **0.0.4.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**

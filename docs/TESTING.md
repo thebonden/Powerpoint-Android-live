@@ -1,6 +1,12 @@
-# Validation — development version 0.0.003
+# Validation — development version 0.0.004
 
-## Wi-Fi update (2026-10-22)
+## Automatic discovery update — 0.0.004 (2026-10-22)
+
+- Full Release build and **33 managed test groups passed**, including six new groups for saved-path precedence, incomplete-package fallback into a WinGet layout, each required support file, ignored unrelated/OBS/deep folders, installation followed by retry, and cancellation. Native QR tests also passed.
+- The production locator, with no saved path, discovered the existing WinGet scrcpy 4.1 installation on the user's PC. This check did not execute scrcpy or contact a tablet.
+- After the earlier desktop installation correction, the user confirmed that the ribbon worked. Independent repeated normal-launch acceptance and physical tablet QR/streaming tests remain outstanding. Automatic discovery and installation guidance still require in-PowerPoint acceptance after updating the installed build.
+
+## Wi-Fi update — 0.0.003 (2026-10-22)
 
 - Complete Debug and Release VSTO builds including the standalone x64 QR helper succeeded. Both configurations passed all 27 managed test groups.
 - **27 managed test groups passed**, including the earlier 14 plus endpoint/result validation, successful helper + ADB handoff, cancellation, nonzero exit, malformed output, offline reconnect, bounded output and child-process timeout/cleanup. Devices are simulated; no live tablet was paired by these tests.

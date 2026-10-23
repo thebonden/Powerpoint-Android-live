@@ -156,6 +156,7 @@ internal static class Program
                 catch(OperationCanceledException){cancelled=true;} Check(cancelled);
             }
         });
+        ScrcpyDiscoveryTests.Run(Test);
         Console.WriteLine("Tests: " + passed + " passed, " + failed + " failed.");
         return failed == 0 ? 0 : 1;
     }
