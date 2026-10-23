@@ -16,7 +16,7 @@ namespace HjvTak.LiveAndroid
     /// <summary>Independent external windows per device; all Office access stays on the STA.</summary>
     public sealed class LiveAndroidController : IDisposable
     {
-        public const string Version = "0.0.100";
+        public const string Version = "0.0.101";
         public const string AnchorName = "HJVTAK_ANDROID_LIVE";
         private const string DeviceTag = "HJVTAK_ANDROID_DEVICE";
         private readonly PowerPoint.Application app;

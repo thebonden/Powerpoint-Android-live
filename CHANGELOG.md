@@ -1,5 +1,15 @@
 # Changes
 
+## 0.0.101 — 2026-10-23 (development)
+
+- Add one self-contained Windows installer EXE: no manual ZIP extraction or folder selection.
+- Validate embedded payload hash, paths, completeness and size before changing Office registration.
+- Use a stable short per-user appdata folder; preserve tablet settings and presentations.
+- Add Microsoft prerequisite-only bootstrapper, PowerPoint checks, recognized-old-version migration and recovery attempts after failed/cancelled installation.
+- Verify success using VSTO exit code and Office registry state. Retain backups and report incomplete recovery.
+- Add eight installer regression groups and read-only verification of the actual packaged EXE.
+- Public publisher signing and clean-machine/upgrade acceptance remain prerequisites for broad release; no central IT deployment or silent install yet.
+
 ## 0.0.100 — 2026-10-23 (development)
 
 - Start the requested 0.0.1xx sequence (assembly/ClickOnce 0.0.100.0).

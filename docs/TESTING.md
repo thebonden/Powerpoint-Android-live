@@ -1,4 +1,13 @@
-# Validation — development version 0.0.100
+# Validation — development version 0.0.101
+
+## Single-file installation — 2026-10-23
+
+- Add-in Release build: 51 managed groups plus native QR tests passed.
+- Installer: eight groups passed (valid extraction, corrupted payload, path traversal, duplicate Windows paths, incomplete payload, settings-preserving replacement/rollback, failed swap recovery, accepted/rejected old manifest locations).
+- The actual EXE's --verify-package path extracted and validated the embedded archive without launching prerequisites or changing Office registration.
+- User chose to perform installation themselves. No 0.0.101 installation was performed by the agent.
+- Required acceptance before broader distribution: fresh Windows/Office user, missing prerequisites, normal desktop launch, update from 0.0.006/0.0.100, update from fixed installer folder, cancelled Microsoft dialog, restoration failures, restart-required prerequisites and uninstall.
+- Development EXE is not publicly signed. No production release or silent/central deployment acceptance claimed.
 
 ## Installer, names and reconnection — 2026-10-23
 

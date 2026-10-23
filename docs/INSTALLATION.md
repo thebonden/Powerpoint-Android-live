@@ -1,19 +1,35 @@
-# Installation · Android Live 0.0.100
+# Nem installation · Android Live 0.0.101
 
-1. Pak hele **Android-Live-0.0.100-installation.zip** ud til en fast mappe, fx Dokumenter/Android Live. Behold alle filer og mapper sammen.
-2. Gem dit arbejde, og luk PowerPoint.
-3. Åbn den udpakkede mappe i Stifinder, og dobbeltklik på **setup.exe**. Kør ikke direkte fra ZIP-filen.
-4. Følg Microsofts installation. Udviklingsudgaven er endnu ikke signeret med et offentligt udgivercertifikat; vurder selv Microsofts tillidsprompt.
-5. Start PowerPoint normalt. Fanen **Android Live** viser version **0.0.100**.
+Del **Android-Live-0.0.101-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
 
-Du behøver ikke Visual Studio eller projektets kildekode for at installere. Windows x64, desktop-PowerPoint, .NET Framework 4.8 og Microsoft VSTO Runtime kræves. Setup kontrollerer .NET Framework 4.8 og VSTO Runtime; internet og eventuelt administratorhjælp kan kræves til forudsætninger. scrcpy installeres separat via vejledningen i Android Live, hvis det ikke findes.
+1. Gem præsentationen, og luk PowerPoint.
+2. Dobbeltklik på **Android-Live-0.0.101-Setup.exe**.
+3. Klik **Installer / opdater**, og følg eventuelle Microsoft-vinduer.
+4. Når installationsprogrammet skriver **Færdig**, start PowerPoint normalt.
 
-## Opdatering fra udviklingsinstallationen 0.0.006
+Installationsfilen skal køres af den Windows-bruger, som skal bruge PowerPoint; brug ikke Kør som administrator. Den placerer selv programmet i en kort, fast mappe under brugerens lokale appdata. Den samme fil kan deles med flere brugere på hver deres pc. Den er ikke en central MSI/Intune-installation til alle brugere på en pc.
 
-Hvis Microsoft skriver, at løsningen allerede er installeret fra en anden placering, fjern **HJVTAK Android Live** under Windows' Installerede apps, og kør den nye setup.exe. Fjern kun denne tilføjelse. Tabletindstillingerne i din brugerprofil og rammerne i dine PowerPoint-filer bevares. Slet ikke din indstillingsmappe.
+## Forudsætninger og første forbindelse
 
-Fremtidige pakker udpakkes til samme faste installationsmappe. Luk PowerPoint før opdatering, og kør setup.exe igen. Automatisk download/opdatering er ikke slået til. En ny udviklingssignatur kan give en ny tillidsprompt.
+Windows 10 (1607 eller nyere)/11, 64-bit, med desktop-PowerPoint. Installationsvinduet kræver .NET Framework 4.6.2 eller nyere (normalt allerede på disse Windows-versioner). Hvis selve Office-tilføjelsen mangler .NET Framework 4.8 eller VSTO Runtime, starter Microsofts komponentinstallation. Den kan kræve internet, administratorhjælp og genstart. Efter genstart køres den samme installationsfil igen.
 
+scrcpy følger endnu ikke med installationsfilen. Android Live finder en eksisterende installation; ellers viser fanen den officielle installationsvejledning. Brugeren skal også aktivere Trådløs fejlfinding og godkende tabletparringen første gang. OBS Studio er ikke nødvendigt.
+
+## Opdatering og fjernelse
+
+Kør den nye versions installationsfil på samme måde. Programmet kontrollerer PowerPoint, validerer hele pakken og flytter kendte tidligere Office-installationer til den faste placering. Tabletindstillinger og PPTX-filer bevares.
+
+Ved en afbrudt Office-installation forsøger programmet at gendanne gamle programfiler og registreringen. Statusvinduet fortæller, hvis geninstallationen af den gamle udgave ikke lykkes. Backups beholdes til fejlfinding. Hvis den gamle kildeplacering mangler, eller der er modstridende registreringer, kan Windows' Installerede apps stadig være nødvendige; programmet fjerner ikke ukendte installationer.
+
+Fjern **HJVTAK Android Live / HjvTak.LiveAndroid** via Windows' Installerede apps for at deaktivere tilføjelsen. De udpakkede programfiler/backups og tabletindstillinger bevares lokalt.
+
+## Før bred deling
+
+Denne udgave er en udviklingsudgave. Den ydre EXE er endnu ikke offentligt udgiversigneret, og Office-manifester bruger et udviklingscertifikat. Windows/Microsoft kan vise en advarsel om ukendt udgiver. Brugerne skal selv vurdere tillidsprompter; installationsprogrammet ændrer ikke sikkerhedsindstillinger og tilføjer ikke certifikater til betroede udgivere.
+
+Før bred distribution skal en ansvarlig udgiver levere et offentligt signeringscertifikat eller en tilsvarende godkendt signeringstjeneste, og vi skal teste installation/opdatering på rene pc'er. Central IT-udrulning og lydløs installation er ikke implementeret.
+
+Den gamle ZIP-pakke er kun til fejlfinding/udvikling. Brug den samlede EXE til almindelige brugere.
 ## På undervisningsdagen
 
 Åbn din gemte PowerPoint på den samme pc/brugerprofil. Tænd Trådløs fejlfinding på tablets, og forbind dem til samme Wi-Fi som pc'en. Tryk **Klargør / forbind alle**.

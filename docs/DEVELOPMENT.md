@@ -1,4 +1,4 @@
-# Windows development — 0.0.100
+# Windows development — 0.0.101
 
 ## Prerequisites and reproducible build
 
@@ -87,3 +87,14 @@ See [WIFI.md](WIFI.md) for the QR protocol, cancellation and network troubleshoo
 - Options restart only the affected owned process. scrcpy has 1.5 seconds to exit gracefully before bounded cleanup; its Android cleanup restores the prior touch indicator setting.
 ## Installation packages
 Run scripts/package.ps1 using PowerShell 7 to build, test and publish a local ClickOnce setup.exe package with its complete Application Files directory, development-signed manifests and corresponding helper source. Use -SkipBuild only after a successful Release build. CI uploads the installation ZIP and SHA-256 checksum. Never commit private signing keys. Local signing identity persists in artifacts; clean CI uses an ephemeral development identity, not a production publisher.
+## Single-file installer
+
+The installer project targets .NET Framework 4.6.2, allowing its UI to start before .NET 4.8 prerequisites are installed. The Office add-in remains .NET 4.8. The package script builds a Microsoft prerequisite-only bootstrapper (no ApplicationFile) and embeds the complete published payload/source in the launcher. No Inno Setup, third-party installer compiler or PowerShell installation is required on recipients' PCs.
+
+The launcher runs as the interactive user. It never imports a trust certificate, alters Office security, kills PowerPoint or modifies settings.xml. It only removes the exact registered HjvTak.LiveAndroid component through VSTOInstaller. Local source URI validation rejects other product names and network locations. It retains stage/backup/failed directories under the product appdata root for diagnostics; it does not recursively delete user directories. Do not run it from a packaged development host to validate real desktop registration; the user should launch the EXE normally.
+
+The package script runs the installer tests and executes only --verify-package against a unique short temporary directory. This path never installs software or accesses Office registration. Real installation/migration and trust prompts require manual acceptance.
+
+Production distribution needs a stable publisher identity: sign both Office manifests and the outer EXE with an approved certificate/service and a suitable timestamp. The current development key is local-only; clean CI uses an ephemeral key. Do not commit or distribute private keys. Public signing and IT deployment are not provisioned automatically.
+
+References: [Microsoft VSTO deployment](https://learn.microsoft.com/en-us/visualstudio/vsto/deploying-an-office-solution-by-using-clickonce) and [GenerateBootstrapper task](https://learn.microsoft.com/en-us/visualstudio/msbuild/generatebootstrapper-task).

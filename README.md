@@ -1,6 +1,6 @@
 # HJVTAK PowerPoint Android Live
 
-**0.0.100 — development build, not accepted for production use.**
+**0.0.101 — development build, not accepted for production use.**
 
 A standalone Windows PowerPoint VSTO add-in for teaching from slides while showing a live Android tablet screen. Pair over **Wi-Fi with a QR code directly from PowerPoint**. No USB connection, OBS Studio, OBS plugin, camera bridge or Android Studio installation is required.
 
@@ -10,10 +10,11 @@ The Wi-Fi helper reuses the pairing code and ideas from the user's working OBS p
 
 ## Install without development tools
 
-Download the **Android-Live-0.0.100-installation** artifact from this branch's successful GitHub Actions run. Extract the complete installation ZIP to a permanent folder, close PowerPoint, and run **setup.exe** from Explorer. It checks .NET Framework 4.8 and VSTO Runtime prerequisites. Review Microsoft's development-publisher trust prompt yourself.
+Distribute **Android-Live-0.0.101-Setup.exe**, one file per recipient. Close PowerPoint, double-click the file, and click **Installer / opdater**. The launcher validates/extracts its payload to a fixed per-user appdata directory, guides missing Microsoft prerequisites, migrates recognized old Office registrations, and confirms success through VSTO's exit status and the resulting registration. It attempts to restore the previous version on failure. Settings and presentations are outside the program directory.
 
-[Installation and teaching-day guide (Danish)](docs/INSTALLATION.md) covers updates from the previous development installation and reconnection. New versions follow **0.0.100, 0.0.101, …**. Run **scripts/package.ps1** with PowerShell 7 to create a local package; CI creates one on every successful build, with matching QR-helper source and licenses.
+[Installation guide (Danish)](docs/INSTALLATION.md) explains prerequisites, updates, recovery and first tablet connection. This is a per-user development installer, not a machine-wide MSI or unattended IT deployment. The outer EXE is not publicly signed; Microsoft trust prompts still apply. scrcpy is discovered/guided separately.
 
+Download the EXE from the **Android-Live-0.0.101-installation** artifact of a successful GitHub Actions run. GitHub wraps artifacts in a download ZIP; extract just the EXE and share that file. Run **scripts/package.ps1** using PowerShell 7 to build/test both the single-file installer and diagnostic ZIP. Corresponding QR source/licenses are embedded.
 ## Build
 
 Requires Windows x64, PowerShell 7, Visual Studio 2022/2026 with Office/SharePoint (Microsoft 365) development, Desktop development with C++, Windows SDK and .NET Framework 4.8 targeting pack. Desktop PowerPoint and the VSTO runtime are required to run the add-in. The native helper is x64; the managed add-in is AnyCPU (32-bit Office runtime testing remains pending).
@@ -68,4 +69,4 @@ The editing preview shows the selected tablet. During a slideshow, it hides and 
 
 The QR helper's reused GPL-2.0-or-later code and MIT QR generator retain their licenses and source under `native/WifiQr`. Keep corresponding helper source with any redistribution. CI provides both binary and helper-source artifacts.
 
-User version **0.0.100** maps to assembly/ClickOnce **0.0.100.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**
+User version **0.0.101** maps to assembly/ClickOnce **0.0.101.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**
