@@ -15,6 +15,24 @@ namespace HjvTak.LiveAndroid
         public List<DeviceProfile> Devices { get; set; } = new List<DeviceProfile>();
         [XmlIgnore] public DeviceProfile Selected => Devices.FirstOrDefault(d => d.Id == SelectedDeviceId);
         private static string SettingsPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "HjvTak", "AndroidLive", "settings.xml");
+        internal DeviceProfile AcceptConnection(DeviceProfile device, DeviceConnection connection)
+        {
+            if(connection==null || !WifiEndpoint.IsValid(connection.Endpoint))throw new ArgumentException("Ugyldig forbindelse.");
+            var existing=Devices.FirstOrDefault(d=>d!=device &&
+                ((!string.IsNullOrEmpty(connection.Serial) && d.HardwareSerial==connection.Serial) ||
+                 (d.Endpoint==connection.Endpoint && (string.IsNullOrEmpty(connection.Serial)||string.IsNullOrEmpty(d.HardwareSerial)))));
+            if(existing!=null) {
+                if(device!=null)throw new InvalidOperationException("Denne tablet er allerede gemt som "+existing.Name+". Vælg den i listen. Den valgte tablets slides er ikke ændret.");
+                device=existing;
+            }
+            if(device==null) {
+                device=new DeviceProfile{Name=string.IsNullOrEmpty(connection.Name)?"Tablet "+(Devices.Count+1):connection.Name};
+                Devices.Add(device);
+            }
+            device.Endpoint=connection.Endpoint;device.HardwareSerial=connection.Serial;
+            SelectedDeviceId=device.Id;
+            return device;
+        }
         public void Normalize()
         {
             if (Devices == null) Devices = new List<DeviceProfile>();

@@ -17,6 +17,9 @@
     <ResolveComReferenceSilent>true</ResolveComReferenceSilent>
   </PropertyGroup>
   <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.8">
+      <Visible>False</Visible><ProductName>Microsoft .NET Framework 4.8</ProductName><Install>true</Install>
+    </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.VSTORuntime.4.0">
       <Visible>False</Visible>
       <ProductName>Microsoft Visual Studio 2010 Tools for Office Runtime %28x86 and x64%29</ProductName>
@@ -122,9 +125,9 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <PropertyGroup>
-    <FriendlyName>HJVTAK Android Live 0.0.006</FriendlyName>
+    <FriendlyName>HJVTAK Android Live 0.0.100</FriendlyName>
     <Description>Android live window overlay for PowerPoint</Description>
-    <ApplicationVersion>0.0.6.0</ApplicationVersion>
+    <ApplicationVersion>0.0.100.0</ApplicationVersion>
     <GenerateManifests>true</GenerateManifests>
     <LangVersion>7.3</LangVersion>
     <SignManifests>true</SignManifests>
@@ -171,7 +174,8 @@
     <Compile Include="ScrcpySetupDialog.cs" />
     <Compile Include="..\HjvTak.LiveAndroid.Core\ScrcpyLocator.cs" />
     <Compile Include="..\HjvTak.LiveAndroid.Core\DeploymentFiles.cs" />
-    <Compile Include="WifiDialog.cs" />
+    <Compile Include="WifiDialog.cs" /><Compile Include="RenameDialog.cs" />
+    <Compile Include="..\HjvTak.LiveAndroid.Core\DeviceConnection.cs" />
     <Compile Include="..\HjvTak.LiveAndroid.Core\WifiEndpoint.cs" />
     <Compile Include="..\HjvTak.LiveAndroid.Core\LocalCommand.cs" />
     <Compile Include="..\HjvTak.LiveAndroid.Core\WifiConnector.cs" />

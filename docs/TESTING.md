@@ -1,4 +1,14 @@
-# Validation — development version 0.0.006
+# Validation — development version 0.0.100
+
+## Installer, names and reconnection — 2026-10-23
+
+- User explicitly confirmed tablet connection and visible display in installed 0.0.006. This does not establish multiple-tablet/audio/orientation acceptance.
+- Release build: 51 managed test groups passed plus native QR tests.
+- New tests cover friendly-name/model fallback, invalid metadata, missing metadata, exact TLS advertisement filtering, changed endpoint/identity matching, wrong-device rejection, legacy profiles, cancellation and XML persistence of custom names/slide keys.
+- Installation ZIP now contains Microsoft setup.exe, signed ClickOnce manifests, complete payload, Danish guide and corresponding helper source/licenses.
+- The new installer and next-day physical reconnection still require installed/manual acceptance. Tests simulate changed endpoints; they do not prove a 24-hour hardware run.
+- Check on the same PC: save PPTX with two profiles/frames, rename them, restart tablets/wireless debugging, then Klargør / forbind alle. Verify routing remains correct. For a failure, select that device and Opdater valgt / QR; confirm IDs/names/other streams remain unchanged.
+- Check clean-machine install, existing-install upgrade, missing prerequisites, user cancellation and normal desktop PowerPoint restart. Do not bypass Microsoft trust prompts.
 
 ## Preview and multiple devices — 0.0.006 (2026-10-23)
 

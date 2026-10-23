@@ -1,4 +1,4 @@
-# Wi-Fi / QR connection — 0.0.006
+# Wi-Fi / QR connection — 0.0.100
 
 PowerPoint is standalone. It launches its own small QR helper; no OBS installation, running OBS process or plugin is needed. The helper reuses the working QR-pairing logic from the user's OBS project, with its source and license preserved in `native/WifiQr/NOTICE.md`.
 
@@ -46,3 +46,12 @@ Use Tilføj tablet / QR for each additional tablet. The Tablet list selects whic
 Connect all desired devices before the presentation. A slide can contain frames for several devices, or different slides can choose different devices. Only device IDs are saved with slide frames; endpoint/ADB pairing remains on this PC. On a different PC, the frames need profiles with matching assignments; automatic profile transfer is not implemented.
 
 The preview opens after successful start. It is independent of slide editing and temporarily hides during a slideshow. See README for sound, physical touch indicators and automatic/locked capture orientation.
+## Next-day reconnection (0.0.100)
+
+The pairing QR is a short-lived exchange, not a 12–24-hour video lease. Android controls pairing authorization and wireless-debugging availability. The saved connection port can change independently. See the [Android ADB wireless guide](https://developer.android.com/tools/adb#wireless).
+
+Klargør / forbind alle checks the last endpoint, then bounded ADB mDNS TLS connection advertisements. A known hardware serial must match before accepting a rediscovered endpoint; names are never identity keys. An unavailable serial prevents automatic rediscovery, leaving explicit QR/address update available. Metadata uses Android global device_name, model fallback and ro.serialno via the exact selected endpoint. Names and serials stay in local XML settings.
+
+The overall discovery deadline is 35 seconds per tablet; each process is limited to four seconds. Cancellation stops only the owned command. No port scanning, pairing expiry changes or network/security changes are performed.
+
+Opdater valgt / QR updates the existing profile, so saved PPTX shape tags remain valid. Omdøb enhed changes only the local display name. New tablets get the Android device name, model, or numbered fallback. Old profiles migrate without losing names/IDs/options. Another PC does not yet import profiles from the PPTX.

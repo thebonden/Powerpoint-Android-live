@@ -63,6 +63,7 @@ namespace HjvTak.LiveAndroid
                 bool restart=addIn.Controller.IsDeviceActive(device.Id);
                 change(device);settings.Save();
                 if(restart)await addIn.Controller.StartDeviceAsync(settings.ScrcpyPath,device,false);
+                settings.Save();
             });
         }
         public void OnAddMarker(Office.IRibbonControl control)
@@ -81,18 +82,12 @@ namespace HjvTak.LiveAndroid
             RunAsync(async()=>{
                 if(!EnsureScrcpy())return;
                 var device=newDevice?null:settings.Selected;
-                string endpoint;
-                using(var dialog=new WifiDialog(settings.ScrcpyPath,device?.Endpoint??"",reconnect)){
-                    if(dialog.ShowDialog()!=DialogResult.OK)return;endpoint=dialog.Endpoint;
+                DeviceConnection connection;
+                using(var dialog=new WifiDialog(settings.ScrcpyPath,device?.Endpoint??"",reconnect,device)){
+                    if(dialog.ShowDialog()!=DialogResult.OK)return;connection=dialog.Connection;
                 }
-                var existing=settings.Devices.FirstOrDefault(d=>d.Endpoint==endpoint && d!=device);
-                if(existing!=null)device=existing; // Do not duplicate the same known endpoint.
-                if(device==null){
-                    device=new DeviceProfile{Name="Tablet "+(settings.Devices.Count+1)};
-                    settings.Devices.Add(device);
-                }
-                device.Endpoint=endpoint;settings.SelectedDeviceId=device.Id;settings.Save();
-                await addIn.Controller.StartDeviceAsync(settings.ScrcpyPath,device);
+                device=settings.AcceptConnection(device,connection);settings.Save();
+                await addIn.Controller.StartDeviceAsync(settings.ScrcpyPath,device);settings.Save();
             });
         }
         public void OnStartAll(Office.IRibbonControl control)
@@ -102,7 +97,7 @@ namespace HjvTak.LiveAndroid
                 var errors=new System.Collections.Generic.List<string>();
                 foreach(var device in settings.Devices.ToArray()){
                     if(addIn.Controller.IsDeviceActive(device.Id))continue;
-                    try{await addIn.Controller.StartDeviceAsync(settings.ScrcpyPath,device);}
+                    try{await addIn.Controller.StartDeviceAsync(settings.ScrcpyPath,device);settings.Save();}
                     catch(OperationCanceledException){break;}
                     catch(Exception ex){errors.Add(device.Name+": "+ex.Message);}
                 }
@@ -115,6 +110,8 @@ namespace HjvTak.LiveAndroid
         public void OnToggle(Office.IRibbonControl control,bool pressed){Run(()=>addIn.Controller.ToggleOverlay());}
         public void OnPreview(Office.IRibbonControl control,bool pressed)
         {Run(()=>{addIn.Controller.SelectDevice(settings.Selected);addIn.Controller.TogglePreview();});}
+        public void OnRename(Office.IRibbonControl control)
+        {Run(()=>{if(settings.Selected==null)return;using(var dialog=new RenameDialog(settings))dialog.ShowDialog();addIn.Controller.SelectDevice(settings.Selected);});}
         public void OnSettings(Office.IRibbonControl control)
         {Run(()=>{using(var dialog=new SettingsDialog(settings))dialog.ShowDialog();addIn.Controller.SelectDevice(settings.Selected);});}
         public void OnStatus(Office.IRibbonControl control)

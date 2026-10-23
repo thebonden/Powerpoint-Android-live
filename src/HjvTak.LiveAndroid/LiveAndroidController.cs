@@ -16,7 +16,7 @@ namespace HjvTak.LiveAndroid
     /// <summary>Independent external windows per device; all Office access stays on the STA.</summary>
     public sealed class LiveAndroidController : IDisposable
     {
-        public const string Version = "0.0.006";
+        public const string Version = "0.0.100";
         public const string AnchorName = "HJVTAK_ANDROID_LIVE";
         private const string DeviceTag = "HJVTAK_ANDROID_DEVICE";
         private readonly PowerPoint.Application app;
@@ -76,7 +76,9 @@ namespace HjvTak.LiveAndroid
             names[id]=profile.Name; Changed();
             try
             {
-                await new WifiConnector(Path.Combine(Path.GetDirectoryName(executable),"adb.exe"),"").ConnectAsync(endpoint,cancel.Token);
+                var connection = await new DeviceDiscovery(Path.Combine(Path.GetDirectoryName(executable),"adb.exe")).ReconnectAsync(profile,cancel.Token);
+                endpoint=connection.Endpoint;
+                profile.Endpoint=endpoint; profile.HardwareSerial=connection.Serial;
                 string capture = await CaptureOrientation.ResolveAsync(Path.Combine(Path.GetDirectoryName(executable),"adb.exe"),
                     endpoint,orientation,cancel.Token);
                 cancel.Token.ThrowIfCancellationRequested();

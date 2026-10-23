@@ -12,6 +12,7 @@ namespace HjvTak.LiveAndroid.Core
         public string Id { get; set; } = Guid.NewGuid().ToString("N");
         public string Name { get; set; } = "Tablet";
         public string Endpoint { get; set; } = "";
+        public string HardwareSerial { get; set; } = "";
         public bool Audio { get; set; }
         public bool ShowTouches { get; set; }
         public VideoOrientation Orientation { get; set; }

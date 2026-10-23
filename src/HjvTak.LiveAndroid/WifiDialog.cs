@@ -11,19 +11,23 @@ namespace HjvTak.LiveAndroid
     internal sealed class WifiDialog : Form
     {
         private readonly WifiConnector connector;
+        private readonly DeviceDiscovery discovery;
+        private readonly DeviceProfile profile;
         private readonly CancellationTokenSource cancellation = new CancellationTokenSource();
         private readonly TextBox address;
         private readonly Label status;
         private readonly Button qr, connect;
         private bool busy, disposalRequested;
         internal string Endpoint { get; private set; }
+        internal DeviceConnection Connection { get; private set; }
 
-        internal WifiDialog(string scrcpyPath, string savedEndpoint, bool reconnect)
+        internal WifiDialog(string scrcpyPath, string savedEndpoint, bool reconnect, DeviceProfile savedDevice = null)
         {
             string adb = Path.Combine(Path.GetDirectoryName(scrcpyPath), "adb.exe");
             if (!File.Exists(adb)) throw new FileNotFoundException("adb.exe mangler ved siden af scrcpy.exe. Udpak hele scrcpy-pakken, og vælg den under Settings.");
             string helper = DeploymentFiles.QrHelper(typeof(WifiDialog).Assembly);
             connector = new WifiConnector(adb, helper);
+            discovery = new DeviceDiscovery(adb); profile = savedDevice;
             Text = "Forbind tablet via Wi-Fi · PowerPoint"; ClientSize = new Size(610, 300);
             AutoScaleMode = AutoScaleMode.Dpi; FormBorderStyle = FormBorderStyle.FixedDialog;
             StartPosition = FormStartPosition.CenterScreen; MaximizeBox = false; MinimizeBox = false;
@@ -39,17 +43,20 @@ namespace HjvTak.LiveAndroid
             qr.Click += async (s,e) => await Connect(true);
             connect.Click += async (s,e) => await Connect(false);
             CancelButton = cancel;
-            Shown += async (s,e) => await Connect(!reconnect || !WifiEndpoint.IsValid(address.Text));
+            Shown += async (s,e) => await Connect(!reconnect || !WifiEndpoint.IsValid(address.Text), reconnect && profile != null);
             FormClosing += (s,e) => cancellation.Cancel();
         }
-        private async Task Connect(bool pairing)
+        private async Task Connect(bool pairing, bool discover = false)
         {
             if (busy || cancellation.IsCancellationRequested) return;
             busy=true; qr.Enabled=false; connect.Enabled=false; address.Enabled=false;
             status.Text=pairing ? "QR-vinduet åbnes. Scan koden på tabletten…" : "Kontrollerer Wi-Fi-forbindelsen…";
             try
             {
-                string endpoint = pairing ? await connector.PairAsync(cancellation.Token) : await connector.ConnectAsync(address.Text.Trim(), cancellation.Token);
+                string endpoint;
+                if(discover){Connection=await discovery.ReconnectAsync(profile,cancellation.Token);endpoint=Connection.Endpoint;}
+                else{endpoint=pairing ? await connector.PairAsync(cancellation.Token) : await connector.ConnectAsync(address.Text.Trim(), cancellation.Token);
+                    if(endpoint!=null)Connection=await discovery.InspectAsync(endpoint,cancellation.Token);}
                 if (IsDisposed || cancellation.IsCancellationRequested) return;
                 if (endpoint == null) { status.Text="Parringen blev annulleret. Du kan prøve igen."; return; }
                 Endpoint=endpoint; DialogResult=DialogResult.OK; Close();

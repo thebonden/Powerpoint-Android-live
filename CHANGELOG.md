@@ -1,5 +1,15 @@
 # Changes
 
+## 0.0.100 — 2026-10-23 (development)
+
+- Start the requested 0.0.1xx sequence (assembly/ClickOnce 0.0.100.0).
+- Produce a complete setup.exe installation ZIP locally and in CI, with prerequisite checks, Danish instructions, matching QR source and licenses.
+- Read Android device names for new tablets, with model/numbered fallback; add Omdøb enhed independent of scrcpy setup.
+- Reconnect known tablets after an IP/port change through bounded mDNS discovery and hardware-identity matching. Preserve custom names and stable slide tags.
+- Clarify Klargør / forbind alle and Opdater valgt / QR for reusing a PPTX on the same PC on another day.
+- Add eleven regression groups (51 total), including address reuse and explicit QR update without losing slide assignments.
+- Keep pairing QR short-lived; Android controls pairing authorization. No 24-hour connection guarantee is implied.
+
 ## 0.0.006 — 2026-10-23 (development)
 
 - Show an automatic external preview after connection, making live video visible before a slideshow.

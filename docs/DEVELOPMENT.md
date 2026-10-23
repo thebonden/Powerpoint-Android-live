@@ -1,4 +1,4 @@
-# Windows development — 0.0.006
+# Windows development — 0.0.100
 
 ## Prerequisites and reproducible build
 
@@ -85,3 +85,5 @@ See [WIFI.md](WIFI.md) for the QR protocol, cancellation and network troubleshoo
 - Asynchronous ADB preparation is cancellable per device. Ribbon callbacks establish the WinForms UI context before awaiting; all Office and window placement stays on the Office STA.
 - Manual orientation uses bounded, exact-device ADB wm size output and scrcpy capture locks @0/@90. Automatic omits that flag. Audio uses output capture; touches enable the control channel required by scrcpy while keyboard/mouse/gamepad and clipboard sync are disabled.
 - Options restart only the affected owned process. scrcpy has 1.5 seconds to exit gracefully before bounded cleanup; its Android cleanup restores the prior touch indicator setting.
+## Installation packages
+Run scripts/package.ps1 using PowerShell 7 to build, test and publish a local ClickOnce setup.exe package with its complete Application Files directory, development-signed manifests and corresponding helper source. Use -SkipBuild only after a successful Release build. CI uploads the installation ZIP and SHA-256 checksum. Never commit private signing keys. Local signing identity persists in artifacts; clean CI uses an ephemeral development identity, not a production publisher.

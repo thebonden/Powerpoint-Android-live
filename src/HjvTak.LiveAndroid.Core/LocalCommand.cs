@@ -34,7 +34,10 @@ namespace HjvTak.LiveAndroid.Core
                 UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(executable),
                 RedirectStandardOutput = true, RedirectStandardError = true
             };
-            if (adbPath != null) SetAdbEnvironment(start, adbPath);
+            if (adbPath != null) {
+                SetAdbEnvironment(start, adbPath);
+                start.StandardOutputEncoding=Encoding.UTF8; start.StandardErrorEncoding=Encoding.UTF8;
+            }
             using (var process = new Process { StartInfo = start })
             {
                 bool started = false;
