@@ -5,7 +5,9 @@
 - Full Release build and native QR tests passed. **40 managed test groups passed**, including all audio/touch/lock combinations, natural portrait/landscape and override dimensions, scoped/cancellable ADB size query, old settings migration, independent XML preferences and two real simulated child processes.
 - The process test verifies stopping/restarting/failing one device leaves the other running with the same owned window.
 - The user reported that QR pairing in 0.0.005 started a stream but no image appeared while editing. Actual diagnostics identified the deliberate no-slideshow hide rule; the new automatic preview addresses that case.
-- Installation and visual acceptance of the 0.0.006 ribbon/preview, two physical tablets across/same slide, audible output, finger indicators and physical orientation are pending. Automated tests do not establish those hardware outcomes.
+- Version 0.0.006 installed successfully through the desktop installer. A normal desktop launch reported the add-in connected. The new ribbon, migrated Tablet 1 profile, per-device controls and orientation selector were visually verified.
+- GitHub Actions run 39949184256 passed for complete source commit 3685037: Windows Release build/tests and development binary/source artifact uploads.
+- The saved tablet endpoint was offline; the dialog correctly rejected it. The installed native QR helper opened for a new pairing. Live preview, two physical tablets across/same slide, audible output, finger indicators and physical orientation remain pending until devices connect. Automated tests do not establish those hardware outcomes.
 
 New manual checks:
 1. Pair/reconnect and see the editing preview immediately. Resize/move/minimize/close it, change selected tablet, switch to another app, then show again.
