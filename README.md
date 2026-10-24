@@ -1,6 +1,6 @@
 # PowerPoint Android Live
 
-**0.0.104 — development build, not accepted for production use.**
+**0.0.105 — development build, not accepted for production use.**
 
 A standalone Windows PowerPoint VSTO add-in for teaching from slides while showing a live Android tablet screen. Pair over **Wi-Fi with a QR code directly from PowerPoint**. No USB connection, OBS Studio, OBS plugin, camera bridge or Android Studio installation is required.
 
@@ -10,14 +10,14 @@ The Wi-Fi helper reuses the pairing code and ideas from the user's working OBS p
 
 ## Install without development tools
 
-Distribute **Android-Live-0.0.104-Setup.exe**, one file per recipient. Close PowerPoint, double-click the file, and click **Installer / opdater**. The launcher validates/extracts its payload to a fixed per-user appdata directory, guides missing Microsoft prerequisites, migrates recognized old Office registrations, and confirms success through VSTO's exit status and the resulting registration. It attempts to restore the previous version on failure. Settings and presentations are outside the program directory.
+Distribute **Android-Live-0.0.105-Setup.exe**, one file per recipient. Close PowerPoint, double-click the file, and click **Installer / opdater**. The launcher validates/extracts its payload to a fixed per-user appdata directory, guides missing Microsoft prerequisites, migrates recognized old Office registrations, and confirms success through VSTO's exit status and the resulting registration. It attempts to restore the previous version on failure. Settings and presentations are outside the program directory.
 
 [Installation guide (Danish)](docs/INSTALLATION.md) explains prerequisites, updates, recovery and first tablet connection. The same EXE supports silent central deployment in user context; the IT bundle includes install/uninstall commands, detection and guidance. This is not a machine-wide MSI. The outer EXE is not publicly signed; Microsoft trust prompts still apply. scrcpy is discovered/guided separately.
 
-Download the EXE from the **Android-Live-0.0.104-installation** artifact of a successful GitHub Actions run. GitHub wraps artifacts in a download ZIP; extract just the EXE and share that file. Run **scripts/package.ps1** using PowerShell 7 to build/test both the single-file installer and diagnostic ZIP. Corresponding QR source/licenses are embedded.
+Download the EXE from the **Android-Live-0.0.105-installation** artifact of a successful GitHub Actions run. GitHub wraps artifacts in a download ZIP; extract just the EXE and share that file. Run **scripts/package.ps1** using PowerShell 7 to build/test both the single-file installer and diagnostic ZIP. Corresponding QR source/licenses are embedded.
 ## Central IT deployment and neutral identity
 
-**Android-Live-0.0.104-IT.zip** contains the same EXE, Windows PowerShell wrappers, version-aware detection and [IT deployment instructions](docs/IT-DEPLOYMENT.md). Use user-context Intune/management assignments with --install --silent, --uninstall --silent and --detect. Service accounts are refused. Missing dependencies or publisher trust fail without a dialog and before removing the old add-in; PowerPoint running returns a retry code.
+**Android-Live-0.0.105-IT.zip** contains the same EXE, Windows PowerShell wrappers, version-aware detection and [IT deployment instructions](docs/IT-DEPLOYMENT.md). Use user-context Intune/management assignments with --install --silent, --uninstall --silent and --detect. Service accounts are refused. Missing dependencies or publisher trust fail without a dialog and before removing the old add-in; PowerPoint running returns a retry code.
 
 Product identity, program files, namespaces, new settings paths and development-certificate name are now **Android Live**. A small read-only compatibility class retains released identifiers for settings, registrations and slide frames. User-supplied tablet names are preserved.
 
@@ -49,7 +49,7 @@ Keep the PPTX and the same Windows user profile. Turn on Wireless debugging, joi
 
 If a tablet cannot be found, select it and use **Opdater valgt / QR** or enter the current connection address. This updates the existing profile, retaining its stable slide key and custom name. Never recreate the slide frames just because the port changed. The device list belongs to the PC user profile and is not transferred with the PPTX to another PC.
 
-New tablets use Android's own device name (model fallback), and **Omdøb enhed** saves a custom name. Reconnection never replaces a custom name. Existing frame captions remain as originally inserted; routing uses the stable ID.
+New tablets use Android's own device name (model fallback). Legacy generated names such as Tablet 1 are refreshed on the next connection. **Omdøb enhed** lets you clear **Brug enhedens Android-navn** and save a custom PowerPoint name, or select it again to follow Android's name. This choice and the last reported Android name are saved separately. Reconnection never replaces an explicitly custom name. Old non-placeholder names are conservatively preserved because earlier versions did not record their source. Existing frame captions remain as originally inserted; routing uses the stable ID.
 
 ## Show the whole Android screen
 
@@ -79,4 +79,4 @@ The editing preview shows the selected tablet. During a slideshow, it hides and 
 
 The QR helper's reused GPL-2.0-or-later code and MIT QR generator retain their licenses and source under `native/WifiQr`. Keep corresponding helper source with any redistribution. CI provides both binary and helper-source artifacts.
 
-User version **0.0.104** maps to assembly/ClickOnce **0.0.104.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**
+User version **0.0.105** maps to assembly/ClickOnce **0.0.105.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**

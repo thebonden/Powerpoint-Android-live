@@ -26,9 +26,10 @@ namespace AndroidLive
                 device=existing;
             }
             if(device==null) {
-                device=new DeviceProfile{Name=string.IsNullOrEmpty(connection.Name)?"Tablet "+(Devices.Count+1):connection.Name};
+                device=new DeviceProfile{Name="Tablet "+(Devices.Count+1),NameMode=DeviceNameMode.Android};
                 Devices.Add(device);
             }
+            device.ApplyAndroidName(connection.Name);
             device.Endpoint=connection.Endpoint;device.HardwareSerial=connection.Serial;
             SelectedDeviceId=device.Id;
             return device;
@@ -40,8 +41,10 @@ namespace AndroidLive
             if (Devices.Count == 0 && WifiEndpoint.IsValid(Serial))
                 Devices.Add(new DeviceProfile { Id = "legacy", Name = "Tablet 1", Endpoint = Serial });
             if (Selected == null) SelectedDeviceId = Devices.FirstOrDefault()?.Id ?? "";
-            foreach (var device in Devices)
+            foreach (var device in Devices) {
+                device.NormalizeNameMode();
                 if (!Enum.IsDefined(typeof(VideoOrientation),device.Orientation)) device.Orientation = VideoOrientation.Automatic;
+            }
         }
         public static UserSettings Load() => LoadFrom(SettingsPath,
             LegacyCompatibility.SettingsPath(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)));

@@ -7,10 +7,43 @@ namespace AndroidLive.Core
 {
     public enum VideoOrientation { Automatic, Landscape, Portrait }
 
+    public enum DeviceNameMode { Legacy, Android, Custom }
+
     public sealed class DeviceProfile
     {
         public string Id { get; set; } = Guid.NewGuid().ToString("N");
         public string Name { get; set; } = "Tablet";
+        public string AndroidName { get; set; } = "";
+        public DeviceNameMode NameMode { get; set; }
+        internal void NormalizeNameMode()
+        {
+            if(!Enum.IsDefined(typeof(DeviceNameMode),NameMode))NameMode=DeviceNameMode.Legacy;
+            if(NameMode!=DeviceNameMode.Legacy)return;
+            // Old versions did not record where a name came from. Only known generated
+            // placeholders can safely become automatic; preserve all other old names.
+            NameMode=string.IsNullOrWhiteSpace(Name) ||
+                Regex.IsMatch(Name,@"^Tablet(?: [0-9]+)?$",RegexOptions.CultureInvariant)
+                ? DeviceNameMode.Android : DeviceNameMode.Custom;
+        }
+        internal void ApplyAndroidName(string value)
+        {
+            NormalizeNameMode();
+            string clean=DeviceDiscovery.Clean(value,60);
+            if(clean.Length==0)return; // A failed metadata read must not erase a known name.
+            AndroidName=clean;
+            if(NameMode==DeviceNameMode.Android)Name=clean;
+        }
+        internal void SetCustomName(string value)
+        {
+            string clean=DeviceDiscovery.Clean(value,60);
+            if(clean.Length==0)throw new ArgumentException("Skriv et navn til enheden.");
+            Name=clean;NameMode=DeviceNameMode.Custom;
+        }
+        internal void UseAndroidName()
+        {
+            NameMode=DeviceNameMode.Android;
+            if(!string.IsNullOrEmpty(AndroidName))Name=AndroidName;
+        }
         public string Endpoint { get; set; } = "";
         public string HardwareSerial { get; set; } = "";
         public bool Audio { get; set; }

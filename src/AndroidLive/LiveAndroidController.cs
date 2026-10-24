@@ -16,7 +16,7 @@ namespace AndroidLive
     /// <summary>Independent external windows per device; all Office access stays on the STA.</summary>
     public sealed class LiveAndroidController : IDisposable
     {
-        public const string Version = "0.0.104";
+        public const string Version = "0.0.105";
         public const string AnchorName = SlideIdentity.Name;
         private const string DeviceTag = SlideIdentity.Tag;
         private readonly PowerPoint.Application app;
@@ -79,6 +79,7 @@ namespace AndroidLive
                 var connection = await new DeviceDiscovery(Path.Combine(Path.GetDirectoryName(executable),"adb.exe")).ReconnectAsync(profile,cancel.Token);
                 endpoint=connection.Endpoint;
                 profile.Endpoint=endpoint; profile.HardwareSerial=connection.Serial;
+                profile.ApplyAndroidName(connection.Name); names[id]=profile.Name;
                 string capture = await CaptureOrientation.ResolveAsync(Path.Combine(Path.GetDirectoryName(executable),"adb.exe"),
                     endpoint,orientation,cancel.Token);
                 cancel.Token.ThrowIfCancellationRequested();

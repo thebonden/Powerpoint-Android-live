@@ -13,10 +13,44 @@ internal static class DeviceDiscoveryTests
         test("explicit QR update keeps slide identity, name and settings",()=>{
             var settings=new UserSettings();
             var profile=settings.AcceptConnection(null,new DeviceConnection{Endpoint="10.0.0.8:4444",Name="Tablet001",Serial="one"});
-            string id=profile.Id;profile.Name="Mit navn";profile.Audio=true;
+            string id=profile.Id;profile.SetCustomName("Mit navn");profile.Audio=true;
             var updated=settings.AcceptConnection(profile,new DeviceConnection{Endpoint="10.0.0.9:5555",Name="Android name",Serial="one"});
             Check(updated.Id==id&&updated.Name=="Mit navn"&&updated.Audio&&settings.Devices.Count==1);
             Check(settings.AcceptConnection(null,new DeviceConnection{Endpoint="10.0.0.10:6666",Name="Android name",Serial="one"})==profile);
+        });
+        test("new devices use Android names and generated old placeholders update on reconnect",()=>{
+            var settings=new UserSettings();
+            var fresh=settings.AcceptConnection(null,new DeviceConnection{Endpoint="10.0.0.8:4444",Name="Tablet001",Serial="one"});
+            Check(fresh.Name=="Tablet001"&&fresh.NameMode==DeviceNameMode.Android);
+            var old=new DeviceProfile{Id="legacy",Name="Tablet 1",Endpoint="10.0.0.9:5555"};
+            settings.Devices.Add(old);settings.Normalize();
+            settings.AcceptConnection(old,new DeviceConnection{Endpoint="10.0.0.9:6666",Name="Tablet002",Serial="two"});
+            Check(old.Name=="Tablet002"&&old.Id=="legacy"&&old.AndroidName=="Tablet002");
+            old.ApplyAndroidName("Tablet003");
+            Check(old.Name=="Tablet003");
+            old.ApplyAndroidName("");
+            Check(old.Name=="Tablet003");
+        });
+        test("custom names survive reconnect even when they resemble old placeholders",()=>{
+            var device=new DeviceProfile{Name="Tablet 1"};
+            device.SetCustomName("Tablet 2");device.ApplyAndroidName("Tablet001");
+            Check(device.Name=="Tablet 2"&&device.AndroidName=="Tablet001"&&device.NameMode==DeviceNameMode.Custom);
+            device.UseAndroidName();Check(device.Name=="Tablet001");
+            device.ApplyAndroidName("Tablet002");Check(device.Name=="Tablet002");
+            var legacy=new DeviceProfile{Name="Undervisning"};
+            legacy.ApplyAndroidName("Tablet003");Check(legacy.Name=="Undervisning"&&legacy.NameMode==DeviceNameMode.Custom);
+        });
+        test("automatic and custom name preferences persist independently through XML",()=>{
+            var settings=new UserSettings();
+            var automatic=new DeviceProfile{NameMode=DeviceNameMode.Android};
+            automatic.ApplyAndroidName("Tablet001");
+            var custom=new DeviceProfile();custom.SetCustomName("Mit navn");custom.ApplyAndroidName("Tablet002");
+            settings.Devices.Add(automatic);settings.Devices.Add(custom);
+            var xml=new XmlSerializer(typeof(UserSettings));var text=new StringWriter();xml.Serialize(text,settings);
+            var loaded=(UserSettings)xml.Deserialize(new StringReader(text.ToString()));loaded.Normalize();
+            loaded.Devices[0].ApplyAndroidName("Nyt Android-navn");loaded.Devices[1].ApplyAndroidName("Andet Android-navn");
+            Check(loaded.Devices[0].Name=="Nyt Android-navn"&&loaded.Devices[1].Name=="Mit navn");
+            Check(loaded.Devices[0].Id==automatic.Id&&loaded.Devices[1].Id==custom.Id);
         });
         test("new tablet at reused IP does not steal another tablet's saved slides",()=>{
             var settings=new UserSettings();

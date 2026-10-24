@@ -1,5 +1,13 @@
-# Validation — development version 0.0.104
+# Validation — development version 0.0.105
 
+## Default Android names and explicit custom names — 2026-10-24
+
+- Inspection confirmed the saved profile still used Tablet 1. Previous code only applied the reported Android name when creating a new profile; reconnect paths preserved every existing name, including generated placeholders.
+- Naming mode (Android/custom) and last Android name are now persisted separately. Legacy generated placeholders migrate to automatic mode; other legacy names are preserved. Explicitly custom names, including Tablet N, remain custom on reconnect.
+- Local Release/package build passed native QR checks, **59 managed add-in groups and 14 installer groups**, plus actual EXE payload/CLI verification.
+- Added cases for first naming, old-placeholder migration, subsequent Android-name changes, unavailable metadata, explicit custom names, return to Android naming and XML persistence with unchanged slide IDs. Existing QR/reconnection tests still pass.
+- Reading the tablet's actual Android name could not complete because its saved endpoint was no longer connected. No device address, pairing credential or hardware serial is committed. Installed naming/rename acceptance remains pending.
+- The user installs the update themselves. No 0.0.105 Office installation, presentation mutation or saved-user-settings edit was performed by the agent. This package includes the tested 0.0.104 fitting and 0.0.103 startup fixes.
 ## Full Android screen inside the frame — 2026-10-24
 
 - User confirmed that installed 0.0.103 restores live video, then requested that the complete Android screen always fit inside its frame.

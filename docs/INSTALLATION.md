@@ -1,9 +1,9 @@
-# Nem installation · Android Live 0.0.104
+# Nem installation · Android Live 0.0.105
 
-Del **Android-Live-0.0.104-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
+Del **Android-Live-0.0.105-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
 
 1. Gem præsentationen, og luk PowerPoint.
-2. Dobbeltklik på **Android-Live-0.0.104-Setup.exe**.
+2. Dobbeltklik på **Android-Live-0.0.105-Setup.exe**.
 3. Klik **Installer / opdater**, og følg eventuelle Microsoft-vinduer.
 4. Når installationsprogrammet skriver **Færdig**, start PowerPoint normalt.
 
@@ -36,9 +36,13 @@ Den gamle ZIP-pakke er kun til fejlfinding/udvikling. Brug den samlede EXE til a
 
 Programmet forsøger først den gemte adresse og derefter annoncerede Wi-Fi-enheder, som matcher den kendte enheds identitet. Første gang efter opgradering skal en gammel enhed muligvis opdateres med QR, så identiteten kan læses.
 
-Hvis en enhed ikke bliver fundet: vælg den i **Tablet**, og tryk **Opdater valgt / QR**. Scan en ny QR-kode, eller skriv forbindelsesadressen fra tabletten. Brug denne knap til eksisterende enheder; **Tilføj tablet / QR** er til nye enheder. Navn og slide-tilknytninger bevares.
+Hvis en enhed ikke bliver fundet: vælg den i **Tablet**, og tryk **Opdater valgt / QR**. Scan en ny QR-kode, eller skriv forbindelsesadressen fra tabletten. Brug denne knap til eksisterende enheder; **Tilføj tablet / QR** er til nye enheder. Egne navne og slide-tilknytninger bevares.
 
-En ny enhed får sit Android-navn, fx Tablet001; hvis Android ikke oplyser det, bruges modellen eller Tablet 1 osv. **Omdøb enhed** giver et eget navn, som huskes.
+En ny enhed får automatisk sit Android-navn, fx Tablet001; hvis Android ikke oplyser det, bruges modellen eller Tablet 1 osv. Gamle standardnavne som **Tablet 1** bliver også opdateret ved næste forbindelse.
+
+Vil du bruge dit eget navn: vælg tabletten, klik **Omdøb enhed**, fjern markeringen i **Brug enhedens Android-navn**, skriv navnet og klik **Gem**. Dit eget navn huskes ved genforbindelse. Sæt markeringen igen for at følge Android-navnet. Hvis navnet endnu ikke er læst, hentes det ved næste forbindelse. Eksisterende navne fra gamle versioner, som ikke ligner standardnavne, bevares; du kan selv vælge Android-navnet i samme vindue.
+
+Navnevalget ændrer hverken navnet på selve Android-enheden eller forbindelsen mellem tablet og slides. Teksten på allerede indsatte rammer ændres ikke automatisk.
 
 QR-koden bruges kun til parring og vises i en kort session. Den gemmes ikke i præsentationen og forlænges ikke til 24 timer. Android styrer parringsgodkendelsen og kan slå trådløs fejlfinding fra eller ændre forbindelsesadressen. Ny QR er kun nødvendig, hvis den tidligere parring/genforbindelse ikke længere virker. Netværk, der blokerer mDNS eller trafik mellem klienter, kan kræve manuel adresse eller et andet Wi-Fi.
 
@@ -47,7 +51,7 @@ Enhedslisten tilhører pc'ens brugerprofil. Flytning af PPTX til en anden pc ove
 
 Programmet hedder **Android Live**. Organisationsnavnet er fjernet fra produktnavn, nye programfiler, namespaces, certifikatnavn og nye datamapper. Gamle identifikatorer findes kun i kompatibilitetskoden, så tidligere installerede udgaver, gemte tabletindstillinger og eksisterende slides kan migreres. Dine egne tablet-navne ændres ikke.
 
-Der er to leverancer: **Android-Live-0.0.104-Setup.exe** til almindelig installation og **Android-Live-0.0.104-IT.zip** til IT med samme EXE, lydløse kommandoer, detektion og vejledning.
+Der er to leverancer: **Android-Live-0.0.105-Setup.exe** til almindelig installation og **Android-Live-0.0.105-IT.zip** til IT med samme EXE, lydløse kommandoer, detektion og vejledning.
 ## Hele skærmen i rammen
 
 Android Live tilpasser automatisk hele Android-skærmen til tabletrammen og forhåndsvisningen. Billedet bevarer sine proportioner og bliver ikke beskåret eller strakt. Hvis rammen og enheden har forskellige formater, vises sorte kanter over/under eller ved siderne. Du kan frit gøre rammen bredere, smallere, større eller mindre. Tilpasningen følger også enhedens rotation.

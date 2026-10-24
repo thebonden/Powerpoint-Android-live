@@ -1,5 +1,14 @@
 # Changes
 
+## 0.0.105 — 2026-10-24 (development)
+
+- Refresh Android names for existing generated Tablet/Tablet N profiles, not only newly added devices.
+- Persist automatic/custom naming mode and last known Android name independently.
+- Apply names after QR/manual pairing and normal/bulk reconnection, while retaining stable slide IDs.
+- Add an explicit Android-name checkbox to Rename: choose a custom PowerPoint name or return to the device name.
+- Preserve non-placeholder legacy names conservatively and retain names when metadata cannot be read.
+- Include 0.0.104 full-screen proportional fitting and 0.0.103 startup fix.
+
 ## 0.0.104 — 2026-10-24 (development)
 
 - Always request full-image letterbox rendering with preserved proportions and black padding in preview and slide frames.
