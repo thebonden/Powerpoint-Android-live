@@ -65,6 +65,22 @@ internal static class DeviceDiscoveryTests
             var old=new DeviceProfile{Name="Min tablet"};old.NormalizeNameMode();
             Check(old.ListLabel=="Android-navn ikke hentet — Min tablet");
         });
+        test("renaming an offline saved device repeatedly preserves reused slide identity and options",()=>{
+            var settings=new UserSettings();
+            var device=settings.AcceptConnection(null,new DeviceConnection{Endpoint="10.0.0.8:4444",Name="Tablet001",Serial="one"});
+            string slideId=device.Id;device.Audio=true;device.ShowTouches=true;device.Orientation=VideoOrientation.Landscape;
+            device.SetCustomName("Hold A");device.SetCustomName("Nyt kursus");
+            var xml=new XmlSerializer(typeof(UserSettings));var text=new StringWriter();xml.Serialize(text,settings);
+            var loaded=(UserSettings)xml.Deserialize(new StringReader(text.ToString()));loaded.Normalize();
+            var renamed=loaded.Selected;
+            Check(renamed.Id==slideId&&renamed.Name=="Nyt kursus"&&renamed.AndroidName=="Tablet001");
+            Check(renamed.Endpoint==device.Endpoint&&renamed.HardwareSerial=="one");
+            Check(renamed.Audio&&renamed.ShowTouches&&renamed.Orientation==VideoOrientation.Landscape);
+            loaded.AcceptConnection(renamed,new DeviceConnection{Endpoint="10.0.0.9:5555",Name="Tablet001",Serial="one"});
+            Check(loaded.Selected.Id==slideId&&loaded.Selected.ListLabel=="Tablet001 — Nyt kursus");
+            bool rejected=false;try{renamed.SetCustomName("   ");}catch(ArgumentException){rejected=true;}
+            Check(rejected&&renamed.Name=="Nyt kursus"&&renamed.NameMode==DeviceNameMode.Custom);
+        });
         test("removing last legacy device survives save and reload without resurrection",()=>{
             var settings=new UserSettings{Serial="10.0.0.8:4444"};settings.Normalize();
             Check(settings.RemoveDevice("legacy"));settings.Normalize();

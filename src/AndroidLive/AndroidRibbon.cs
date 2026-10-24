@@ -42,6 +42,17 @@ namespace AndroidLive
             if(control.Id=="Preview")return addIn.Controller?.PreviewEnabled??false;
             return addIn.Controller?.OverlayEnabled??false;
         }
+        public string GetDeviceName(Office.IRibbonControl control)=>settings.Selected?.Name??"";
+        public void OnDeviceName(Office.IRibbonControl control,string value)
+        {
+            Run(()=>{
+                var device=settings.Selected;if(device==null)return;
+                string previous=device.Name;var previousMode=device.NameMode;
+                try{device.SetCustomName(value);settings.Save();}
+                catch{device.Name=previous;device.NameMode=previousMode;throw;}
+                addIn.Controller.SelectDevice(device);
+            });
+        }
         public int GetDeviceCount(Office.IRibbonControl control)=>Math.Max(1,settings.Devices.Count);
         public string GetDeviceLabel(Office.IRibbonControl control,int index)=>settings.Devices.Count==0?"Tilføj en tablet":settings.Devices[index].ListLabel;
         public string GetDeviceId(Office.IRibbonControl control,int index)=>settings.Devices.Count==0?"NoDevice":settings.Devices[index].Id;

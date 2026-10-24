@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="OnLoad">
   <ribbon><tabs><tab id="AndroidLiveTab" label="Android Live">
-    <group id="Devices" label="Tablets · 0.0.106">
+    <group id="Devices" label="Tablets · 0.0.107">
       <dropDown id="DeviceList" label="Tablet" getItemCount="GetDeviceCount" getItemLabel="GetDeviceLabel" getItemID="GetDeviceId" getSelectedItemIndex="GetDeviceIndex" onAction="OnDeviceSelected" getEnabled="GetEnabled" sizeString="Tablet001 — Mit navn til undervisning" supertip="Viser Android-enhedens navn efterfulgt af dit eget navn, hvis du har valgt et." />
+      <editBox id="DeviceName" label="Dit navn" getText="GetDeviceName" onChange="OnDeviceName" getEnabled="GetEnabled" maxLength="60" sizeString="Mit navn til undervisning" supertip="Skriv dit eget navn til den valgte enhed, og tryk Enter. Navnet gemmes også uden forbindelse. Eksisterende slides beholder samme enhed." />
+      <button id="RenameDevice" label="Ændr navn…" onAction="OnRename" getEnabled="GetEnabled" supertip="Ret dit eget navn, eller vælg at følge Android-navnet igen. Slide-tilknytninger bevares." />
       <button id="AddTablet" label="Tilføj tablet / QR" size="large" onAction="OnAddTablet" getEnabled="GetEnabled" supertip="Par en ekstra tablet. Andre tilsluttede tablets fortsætter." />
       <button id="ConnectWifi" label="Opdater valgt / QR" onAction="OnConnectWifi" getEnabled="GetEnabled" />
       <button id="StartAndroid" label="Forbind valgt" imageMso="Play" onAction="OnStart" getEnabled="GetEnabled" />
@@ -24,7 +26,6 @@
       </dropDown>
     </group>
     <group id="Setup" label="Opsætning">
-      <button id="RenameDevice" label="Omdøb enhed" onAction="OnRename" getEnabled="GetEnabled" />
       <button id="Settings" label="Indstillinger" imageMso="PropertySheet" onAction="OnSettings" getEnabled="GetEnabled" />
       <button id="Status" label="Status" imageMso="Info" onAction="OnStatus" getEnabled="GetEnabled" />
       <labelControl id="NotEmbedded" label="Eksternt livebillede" />

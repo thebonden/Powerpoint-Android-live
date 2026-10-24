@@ -1,4 +1,13 @@
-# Validation — development version 0.0.106
+# Validation — development version 0.0.107
+
+## Direct renaming for reused slides — 2026-10-24
+
+- User reported being unable to enter a name. Inspection found the previous dialog disabled its text field while Android-name mode was selected; the action was in a separate setup group.
+- The ribbon now exposes an editable name field and the rename action next to device selection. The dialog allows typing in either mode and automatically chooses custom naming on edits.
+- Release/package validation: 63 managed groups plus 14 installer groups, native QR tests and actual EXE payload/CLI checks.
+- Added offline/repeated-rename round-trip and reconnect coverage: stable slide ID, Android name, hardware identity and audio/touch/orientation options remain unchanged. Empty names are rejected without overwriting the previous name.
+- Ribbon XML/callback bindings are checked locally. Actual installed Office field editing and repeated names on reused slides still require user acceptance. Existing frame captions are not automatically rewritten.
+- The user installs this update. No real presentation, saved settings or Office registration was changed by the agent.
 
 ## Dual device names and removal — 2026-10-24
 

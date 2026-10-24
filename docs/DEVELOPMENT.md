@@ -1,4 +1,4 @@
-# Windows development — 0.0.106
+# Windows development — 0.0.107
 
 ## Prerequisites and reproducible build
 
@@ -98,7 +98,7 @@ The package script runs the installer tests and executes only --verify-package a
 Production distribution needs a stable publisher identity: sign both Office manifests and the outer EXE with an approved certificate/service and a suitable timestamp. The current development key is local-only; clean CI uses an ephemeral key. Do not commit or distribute private keys. Public signing and IT deployment are not provisioned automatically.
 
 References: [Microsoft VSTO deployment](https://learn.microsoft.com/en-us/visualstudio/vsto/deploying-an-office-solution-by-using-clickonce) and [GenerateBootstrapper task](https://learn.microsoft.com/en-us/visualstudio/msbuild/generatebootstrapper-task).
-## Managed deployment (0.0.106)
+## Managed deployment (0.0.107)
 
 The installer accepts explicit --install --silent / --uninstall --silent, --detect and optional --log. All managed paths return exit codes without dialogs. Silent prerequisite checks do not run Microsoft's interactive bootstrapper; IT supplies dependencies first. Managed publisher trust is checked against Trusted Publishers plus a valid certificate chain before uninstalling an older version. No certificates are provisioned by the installer.
 

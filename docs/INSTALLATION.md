@@ -1,9 +1,9 @@
-# Nem installation · Android Live 0.0.106
+# Nem installation · Android Live 0.0.107
 
-Del **Android-Live-0.0.106-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
+Del **Android-Live-0.0.107-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
 
 1. Gem præsentationen, og luk PowerPoint.
-2. Dobbeltklik på **Android-Live-0.0.106-Setup.exe**.
+2. Dobbeltklik på **Android-Live-0.0.107-Setup.exe**.
 3. Klik **Installer / opdater**, og følg eventuelle Microsoft-vinduer.
 4. Når installationsprogrammet skriver **Færdig**, start PowerPoint normalt.
 
@@ -40,7 +40,9 @@ Hvis en enhed ikke bliver fundet: vælg den i **Tablet**, og tryk **Opdater valg
 
 En ny enhed får automatisk sit Android-navn, fx Tablet001; hvis Android ikke oplyser det, bruges modellen eller Tablet 1 osv. Gamle standardnavne som **Tablet 1** bliver også opdateret ved næste forbindelse.
 
-Vil du bruge dit eget navn: vælg tabletten, klik **Omdøb enhed**, fjern markeringen i **Brug enhedens Android-navn**, skriv navnet og klik **Gem**. Dit eget navn huskes ved genforbindelse. Sæt markeringen igen for at følge Android-navnet. Hvis navnet endnu ikke er læst, hentes det ved næste forbindelse. Eksisterende navne fra gamle versioner, som ikke ligner standardnavne, bevares; du kan selv vælge Android-navnet i samme vindue.
+Vil du give eller ændre dit eget navn: vælg tabletten i listen, skriv i feltet **Dit navn** ved listen, og tryk **Enter**. Navnet bliver gemt med det samme og huskes ved genforbindelse. Enheden behøver ikke være forbundet. Du kan fx ændre **Hold A** til **Nyt kursus**, når du genbruger slides; rammerne beholder forbindelsen til samme enhed.
+
+Knappen **Ændr navn…** åbner også et navnevindue. Her kan du altid skrive i navnefeltet; når du skriver, vælges dit eget navn automatisk. Klik **Gem**. Vil du igen følge Android-navnet, sæt markeringen i **Brug enhedens Android-navn** og gem. Hvis Android-navnet endnu ikke er læst, hentes det ved næste forbindelse.
 
 Listen viser begge navne, fx **Tablet001 — Undervisning**: først Android-navnet, derefter dit eget navn. Er de ens, vises navnet kun én gang. Hvis Android-navnet endnu ikke er hentet, står det tydeligt sammen med dit eget navn; forbind enheden for at hente navnet.
 
@@ -59,7 +61,7 @@ Enhedslisten tilhører pc'ens brugerprofil. Flytning af PPTX til en anden pc ove
 
 Programmet hedder **Android Live**. Organisationsnavnet er fjernet fra produktnavn, nye programfiler, namespaces, certifikatnavn og nye datamapper. Gamle identifikatorer findes kun i kompatibilitetskoden, så tidligere installerede udgaver, gemte tabletindstillinger og eksisterende slides kan migreres. Dine egne tablet-navne ændres ikke.
 
-Der er to leverancer: **Android-Live-0.0.106-Setup.exe** til almindelig installation og **Android-Live-0.0.106-IT.zip** til IT med samme EXE, lydløse kommandoer, detektion og vejledning.
+Der er to leverancer: **Android-Live-0.0.107-Setup.exe** til almindelig installation og **Android-Live-0.0.107-IT.zip** til IT med samme EXE, lydløse kommandoer, detektion og vejledning.
 ## Hele skærmen i rammen
 
 Android Live tilpasser automatisk hele Android-skærmen til tabletrammen og forhåndsvisningen. Billedet bevarer sine proportioner og bliver ikke beskåret eller strakt. Hvis rammen og enheden har forskellige formater, vises sorte kanter over/under eller ved siderne. Du kan frit gøre rammen bredere, smallere, større eller mindre. Tilpasningen følger også enhedens rotation.

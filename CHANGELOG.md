@@ -1,5 +1,13 @@
 # Changes
 
+## 0.0.107 — 2026-10-24 (development)
+
+- Add an editable **Dit navn** field beside the tablet list; Enter saves a custom name without requiring a connection.
+- Move the rename action next to the list and label it **Ændr navn…**.
+- Keep the rename dialog text field editable in automatic Android-name mode; typing selects custom mode automatically.
+- Preserve device IDs, Android names, endpoints, options and existing slide assignments when repeatedly renaming a saved device.
+- Document renaming for reused slides and retain the explicit return-to-Android-name option.
+
 ## 0.0.106 — 2026-10-24 (development)
 
 - Show Android device name and custom PowerPoint alias together in the tablet list, without repeating equal names.
