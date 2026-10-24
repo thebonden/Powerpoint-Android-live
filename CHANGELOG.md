@@ -1,5 +1,13 @@
 # Changes
 
+## 0.0.104 — 2026-10-24 (development)
+
+- Always request full-image letterbox rendering with preserved proportions and black padding in preview and slide frames.
+- Disable scrcpy's window aspect lock so it accepts arbitrary frame shapes while preserving the video aspect ratio. No crop, unscaled or stretched rendering is requested.
+- Document scrcpy 4.1+ for these options and explain the fit behavior in the ribbon and installation guide.
+- Extend the real-device probe to normal, tall and wide frames and verify client bounds after SDL processes each resize.
+- User confirmed installed 0.0.103 restores live video. This change retains its startup-readiness fix.
+
 ## 0.0.103 — 2026-10-24 (development)
 
 - Fix a startup race that could crash scrcpy 4.1 with 0xC0000094 after successful Wi-Fi pairing.

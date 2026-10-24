@@ -1,6 +1,6 @@
 # PowerPoint Android Live
 
-**0.0.103 — development build, not accepted for production use.**
+**0.0.104 — development build, not accepted for production use.**
 
 A standalone Windows PowerPoint VSTO add-in for teaching from slides while showing a live Android tablet screen. Pair over **Wi-Fi with a QR code directly from PowerPoint**. No USB connection, OBS Studio, OBS plugin, camera bridge or Android Studio installation is required.
 
@@ -10,14 +10,14 @@ The Wi-Fi helper reuses the pairing code and ideas from the user's working OBS p
 
 ## Install without development tools
 
-Distribute **Android-Live-0.0.103-Setup.exe**, one file per recipient. Close PowerPoint, double-click the file, and click **Installer / opdater**. The launcher validates/extracts its payload to a fixed per-user appdata directory, guides missing Microsoft prerequisites, migrates recognized old Office registrations, and confirms success through VSTO's exit status and the resulting registration. It attempts to restore the previous version on failure. Settings and presentations are outside the program directory.
+Distribute **Android-Live-0.0.104-Setup.exe**, one file per recipient. Close PowerPoint, double-click the file, and click **Installer / opdater**. The launcher validates/extracts its payload to a fixed per-user appdata directory, guides missing Microsoft prerequisites, migrates recognized old Office registrations, and confirms success through VSTO's exit status and the resulting registration. It attempts to restore the previous version on failure. Settings and presentations are outside the program directory.
 
 [Installation guide (Danish)](docs/INSTALLATION.md) explains prerequisites, updates, recovery and first tablet connection. The same EXE supports silent central deployment in user context; the IT bundle includes install/uninstall commands, detection and guidance. This is not a machine-wide MSI. The outer EXE is not publicly signed; Microsoft trust prompts still apply. scrcpy is discovered/guided separately.
 
-Download the EXE from the **Android-Live-0.0.103-installation** artifact of a successful GitHub Actions run. GitHub wraps artifacts in a download ZIP; extract just the EXE and share that file. Run **scripts/package.ps1** using PowerShell 7 to build/test both the single-file installer and diagnostic ZIP. Corresponding QR source/licenses are embedded.
+Download the EXE from the **Android-Live-0.0.104-installation** artifact of a successful GitHub Actions run. GitHub wraps artifacts in a download ZIP; extract just the EXE and share that file. Run **scripts/package.ps1** using PowerShell 7 to build/test both the single-file installer and diagnostic ZIP. Corresponding QR source/licenses are embedded.
 ## Central IT deployment and neutral identity
 
-**Android-Live-0.0.103-IT.zip** contains the same EXE, Windows PowerShell wrappers, version-aware detection and [IT deployment instructions](docs/IT-DEPLOYMENT.md). Use user-context Intune/management assignments with --install --silent, --uninstall --silent and --detect. Service accounts are refused. Missing dependencies or publisher trust fail without a dialog and before removing the old add-in; PowerPoint running returns a retry code.
+**Android-Live-0.0.104-IT.zip** contains the same EXE, Windows PowerShell wrappers, version-aware detection and [IT deployment instructions](docs/IT-DEPLOYMENT.md). Use user-context Intune/management assignments with --install --silent, --uninstall --silent and --detect. Service accounts are refused. Missing dependencies or publisher trust fail without a dialog and before removing the old add-in; PowerPoint running returns a retry code.
 
 Product identity, program files, namespaces, new settings paths and development-certificate name are now **Android Live**. A small read-only compatibility class retains released identifiers for settings, registrations and slide frames. User-supplied tablet names are preserved.
 
@@ -35,7 +35,7 @@ This builds the QR helper from source, checks its vendored QR-generator hashes, 
 
 ## Connect and choose your tablets
 
-1. Click **Tilføj tablet / QR**. PowerPoint automatically finds a complete scrcpy installation. If none is found, **Installér scrcpy…** opens the [official Windows guide](https://github.com/Genymobile/scrcpy/blob/master/doc/windows.md). Install/extract the complete package and click **Søg igen**. Development is validated against scrcpy 4.1.
+1. Click **Tilføj tablet / QR**. PowerPoint automatically finds a complete scrcpy installation. If none is found, **Installér scrcpy…** opens the [official Windows guide](https://github.com/Genymobile/scrcpy/blob/master/doc/windows.md). Install/extract the complete package and click **Søg igen**. Requires scrcpy 4.1 or newer for the explicit full-screen fit options.
 2. Put PC and tablet on the same local Wi-Fi. On Android 11+, open Developer options → Wireless debugging → **Pair device with QR code**. Use that scanner, not the ordinary camera app.
 3. After pairing, a **Forhåndsvisning** window opens automatically. A connection is visible immediately, even before a slideshow. Close/toggle this preview without stopping the connection.
 4. Repeat **Tilføj tablet / QR** for additional tablets. Choose a tablet in the **Tablet** list; give it a useful name with **Omdøb enhed**.
@@ -50,6 +50,10 @@ Keep the PPTX and the same Windows user profile. Turn on Wireless debugging, joi
 If a tablet cannot be found, select it and use **Opdater valgt / QR** or enter the current connection address. This updates the existing profile, retaining its stable slide key and custom name. Never recreate the slide frames just because the port changed. The device list belongs to the PC user profile and is not transferred with the PPTX to another PC.
 
 New tablets use Android's own device name (model fallback), and **Omdøb enhed** saves a custom name. Reconnection never replaces a custom name. Existing frame captions remain as originally inserted; routing uses the stable ID.
+
+## Show the whole Android screen
+
+Preview and slideshow frames always use proportional letterbox scaling: the whole captured Android screen fits inside the chosen rectangle, with black padding when aspect ratios differ. Window aspect locking is disabled so scrcpy accepts tall, wide and freely resized frames; the image itself retains its proportions. No crop or stretch option is used. Rotation is handled by scrcpy. Android app/system restrictions still determine what Android supplies.
 
 ## Sound, finger marks and orientation
 
@@ -75,4 +79,4 @@ The editing preview shows the selected tablet. During a slideshow, it hides and 
 
 The QR helper's reused GPL-2.0-or-later code and MIT QR generator retain their licenses and source under `native/WifiQr`. Keep corresponding helper source with any redistribution. CI provides both binary and helper-source artifacts.
 
-User version **0.0.103** maps to assembly/ClickOnce **0.0.103.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**
+User version **0.0.104** maps to assembly/ClickOnce **0.0.104.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**

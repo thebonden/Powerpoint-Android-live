@@ -21,6 +21,8 @@ internal static class MultiDeviceTests
                 Check(args.Contains("--no-control")==!touches);
                 if(touches)Check(args.Contains("--keyboard=disabled")&&args.Contains("--mouse=disabled")&&args.Contains("--gamepad=disabled")&&args.Contains("--no-clipboard-autosync"));
                 Check(!args.Contains("--audio-source=mic"));
+                Check(args.Contains("--render-fit=letterbox")&&args.Contains("--no-window-aspect-ratio-lock"));
+                Check(!args.Contains("--crop")&&!args.Contains("--render-fit=unscaled")&&!args.Contains("--render-fit=stretched"));
                 Check(args.Contains("--capture-orientation=")==(angle!=null));
             }
             bool rejected=false;try{ScrcpyArguments.Build("test","x",true,true,"@0 --record=x");}catch(ArgumentException){rejected=true;}Check(rejected);

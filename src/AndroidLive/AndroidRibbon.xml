@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="OnLoad">
   <ribbon><tabs><tab id="AndroidLiveTab" label="Android Live">
-    <group id="Devices" label="Tablets · 0.0.103">
+    <group id="Devices" label="Tablets · 0.0.104">
       <dropDown id="DeviceList" label="Tablet" getItemCount="GetDeviceCount" getItemLabel="GetDeviceLabel" getItemID="GetDeviceId" getSelectedItemIndex="GetDeviceIndex" onAction="OnDeviceSelected" getEnabled="GetEnabled" sizeString="Tablet med et langt navn" />
       <button id="AddTablet" label="Tilføj tablet / QR" size="large" onAction="OnAddTablet" getEnabled="GetEnabled" supertip="Par en ekstra tablet. Andre tilsluttede tablets fortsætter." />
       <button id="ConnectWifi" label="Opdater valgt / QR" onAction="OnConnectWifi" getEnabled="GetEnabled" />
@@ -11,8 +11,8 @@
       <button id="StopAll" label="Stop alle" onAction="OnStopAll" getEnabled="GetEnabled" />
     </group>
     <group id="SlideFeed" label="Billede på slide">
-      <button id="AddMarker" label="Indsæt tabletramme" imageMso="ShapeRectangle" size="large" onAction="OnAddMarker" getEnabled="GetEnabled" supertip="Indsæt valgt tablets ramme på denne slide. Gentag med en anden tablet for at vise flere samtidig. Flyt og tilpas rammerne." />
-      <toggleButton id="Preview" label="Forhåndsvisning" onAction="OnPreview" getPressed="GetPressed" getEnabled="GetEnabled" />
+      <button id="AddMarker" label="Indsæt tabletramme" imageMso="ShapeRectangle" size="large" onAction="OnAddMarker" getEnabled="GetEnabled" supertip="Indsæt valgt tablets ramme på denne slide. Gentag med en anden tablet for at vise flere samtidig. Flyt og tilpas rammerne. Hele enhedens skærm vises uden beskæring; sorte kanter udfylder forskelle i format." />
+      <toggleButton id="Preview" label="Forhåndsvisning" supertip="Vis hele enhedens skærm uden beskæring. Billedet tilpasses vinduet med bevarede proportioner." onAction="OnPreview" getPressed="GetPressed" getEnabled="GetEnabled" />
       <toggleButton id="ShowOverlay" label="Vis livebilleder" onAction="OnToggle" getPressed="GetPressed" getEnabled="GetEnabled" />
     </group>
     <group id="DeviceOptions" label="Valgt tablets indstillinger">

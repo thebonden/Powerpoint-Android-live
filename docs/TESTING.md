@@ -1,5 +1,15 @@
-# Validation — development version 0.0.103
+# Validation — development version 0.0.104
 
+## Full Android screen inside the frame — 2026-10-24
+
+- User confirmed that installed 0.0.103 restores live video, then requested that the complete Android screen always fit inside its frame.
+- Explicitly request --render-fit=letterbox, --no-window-aspect-ratio-lock and a black background. Retain the full default display capture with no crop. Existing option-combination tests check this contract across audio/touch/orientation choices.
+- Local Release/package build passed native QR checks, 56 managed test groups and 14 installer groups, plus actual EXE verification.
+- The paired tablet passed three eight-second production-session probe runs in 640x400, 320x600 and 900x220 client frames. Tests checked decoded texture availability, client position/size after SDL event processing (including a further width change), hide/resume and owned-process cleanup.
+- The baseline also passed frame-bound checks: these tests establish geometry compatibility, not reproduction of specific missing pixels reported by the user.
+- A separate 45-second live scrcpy run with the explicit fit options received video and exited normally. Automated visual inspection could not complete because Computer Use app approval timed out; no pixel-completeness claim is based on a screenshot.
+- 0.0.104 has not been installed into the user's PowerPoint. Installed preview/slideshow acceptance, physical rotation and checking all four display edges still require user confirmation. No presentation or device settings were changed.
+- Behavior follows the official [scrcpy 4.1 window documentation](https://github.com/Genymobile/scrcpy/blob/v4.1/doc/window.md#render-fit). The window can change aspect ratio while letterbox preserves the image proportions. scrcpy 4.1+ is required for the explicit fit options.
 ## Live video startup correction — 2026-10-24
 
 - Installed 0.0.102 connected successfully to the user's tablet but scrcpy exited with -1073741676 (0xC0000094); Windows Application Error events confirmed the crash in scrcpy.exe. Saved tablet identity/options and neutral settings migration were intact.

@@ -8,9 +8,11 @@ namespace AndroidLive.Core
         public static string Build(string title, string serial, bool audio = false, bool showTouches = false, string captureOrientation = null)
         {
             if (string.IsNullOrWhiteSpace(title)) throw new ArgumentException("Window title is required.");
-            // Launch out of view until the STA timer finds the owned video window.
+            // Fit the complete device image inside any slide/preview rectangle. Disable
+            // the window aspect lock, not the video aspect ratio; letterbox adds padding.
+            // Launch off-screen until scrcpy shows its initialized video window (4.1+).
             string args = "--window-title=" + Quote(title) +
-                " --window-borderless --window-x=-32000 --window-y=-32000 --window-width=320 --window-height=240";
+                " --render-fit=letterbox --no-window-aspect-ratio-lock --background-color=000000 --window-borderless --window-x=-32000 --window-y=-32000 --window-width=320 --window-height=240";
             if (!audio) args += " --no-audio";
             // scrcpy rejects --show-touches with --no-control. Disable keyboard, mouse, gamepad and automatic clipboard synchronization.
             args += showTouches ? " --show-touches --keyboard=disabled --mouse=disabled --gamepad=disabled --no-clipboard-autosync" : " --no-control";
