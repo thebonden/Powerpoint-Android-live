@@ -1,5 +1,13 @@
 # Changes
 
+## 0.0.108 — 2026-10-24 (development)
+
+- Remove the development version from slide frame captions.
+- Show **Livebillede fra Android name — custom name** followed by **under slideshow**, reusing the list's equal-name and missing-metadata handling.
+- Include both names in the frame's alternative text.
+- Rename the frame action to **Indsæt / opdater ramme**. Reusing it updates the selected tablet's existing frame on the current slide instead of only selecting it.
+- Retain the existing shape, slide identity and placement; frame text is refreshed only by the explicit insert/update action.
+
 ## 0.0.107 — 2026-10-24 (development)
 
 - Add an editable **Dit navn** field beside the tablet list; Enter saves a custom name without requiring a connection.

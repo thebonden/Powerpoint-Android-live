@@ -1,4 +1,12 @@
-# Validation — development version 0.0.107
+# Validation — development version 0.0.108
+
+## Frame captions with both names — 2026-10-24
+
+- New and explicitly refreshed frames use the same dual-name label as the device list, followed by under slideshow, without a version number.
+- The existing-frame branch writes the caption on the matching device ID and selects that same shape; it does not create a replacement shape or rewrite routing tags.
+- Release/package validation: 63 managed groups and 14 installer groups, native QR checks and actual EXE payload/CLI verification. Existing label tests cover custom names, identical names, missing metadata and name refresh.
+- Installed Office acceptance remains pending: insert a new frame, refresh an old version-bearing frame, rename then refresh, and verify slide routing and appearance. Existing user text in a frame is replaced only when the user explicitly chooses the insert/update action.
+- No real presentation, device settings or Office registration was changed by the agent.
 
 ## Direct renaming for reused slides — 2026-10-24
 

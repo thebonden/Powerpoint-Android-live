@@ -1,9 +1,9 @@
-# Nem installation · Android Live 0.0.107
+# Nem installation · Android Live 0.0.108
 
-Del **Android-Live-0.0.107-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
+Del **Android-Live-0.0.108-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
 
 1. Gem præsentationen, og luk PowerPoint.
-2. Dobbeltklik på **Android-Live-0.0.107-Setup.exe**.
+2. Dobbeltklik på **Android-Live-0.0.108-Setup.exe**.
 3. Klik **Installer / opdater**, og følg eventuelle Microsoft-vinduer.
 4. Når installationsprogrammet skriver **Færdig**, start PowerPoint normalt.
 
@@ -50,9 +50,11 @@ Listen viser begge navne, fx **Tablet001 — Undervisning**: først Android-navn
 
 Vælg enheden, klik **Fjern fra listen**, og bekræft. Dens livebillede stoppes, og den fjernes fra den gemte liste og status. Andre enheder fortsætter. Android-parringen fjernes ikke.
 
-Slides og rammer bliver bevaret, men rammer til den fjernede enhed viser ikke længere livebillede. Tilføjer du enheden igen, får den en ny plads i listen; slet dens gamle rammer og indsæt nye med **Indsæt tabletramme**. Brug i stedet **Opdater valgt / QR**, hvis du vil genforbinde en eksisterende enhed og beholde rammernes tilknytning.
+Slides og rammer bliver bevaret, men rammer til den fjernede enhed viser ikke længere livebillede. Tilføjer du enheden igen, får den en ny plads i listen; slet dens gamle rammer og indsæt nye med **Indsæt / opdater ramme**. Brug i stedet **Opdater valgt / QR**, hvis du vil genforbinde en eksisterende enhed og beholde rammernes tilknytning.
 
-Navnevalget ændrer hverken navnet på selve Android-enheden eller forbindelsen mellem tablet og slides. Teksten på allerede indsatte rammer ændres ikke automatisk.
+Navnevalget ændrer hverken navnet på selve Android-enheden eller forbindelsen mellem tablet og slides. Rammen viser fx **Livebillede fra Tablet001 — INSTRUKTØR** og **under slideshow**, uden versionsnummer. Begge navne bruges; ens navne vises kun én gang.
+
+Har du allerede en ramme på sliden: vælg dens tablet i listen, og klik **Indsæt / opdater ramme**. Det opdaterer teksten i den eksisterende ramme uden at indsætte en ekstra ramme eller ændre enhedens slide-tilknytning. Brug samme knap efter navneændringer, når du genbruger en slide. Eventuel tekst, du selv har skrevet inde i tabletrammen, erstattes ved denne handling.
 
 QR-koden bruges kun til parring og vises i en kort session. Den gemmes ikke i præsentationen og forlænges ikke til 24 timer. Android styrer parringsgodkendelsen og kan slå trådløs fejlfinding fra eller ændre forbindelsesadressen. Ny QR er kun nødvendig, hvis den tidligere parring/genforbindelse ikke længere virker. Netværk, der blokerer mDNS eller trafik mellem klienter, kan kræve manuel adresse eller et andet Wi-Fi.
 
@@ -61,7 +63,7 @@ Enhedslisten tilhører pc'ens brugerprofil. Flytning af PPTX til en anden pc ove
 
 Programmet hedder **Android Live**. Organisationsnavnet er fjernet fra produktnavn, nye programfiler, namespaces, certifikatnavn og nye datamapper. Gamle identifikatorer findes kun i kompatibilitetskoden, så tidligere installerede udgaver, gemte tabletindstillinger og eksisterende slides kan migreres. Dine egne tablet-navne ændres ikke.
 
-Der er to leverancer: **Android-Live-0.0.107-Setup.exe** til almindelig installation og **Android-Live-0.0.107-IT.zip** til IT med samme EXE, lydløse kommandoer, detektion og vejledning.
+Der er to leverancer: **Android-Live-0.0.108-Setup.exe** til almindelig installation og **Android-Live-0.0.108-IT.zip** til IT med samme EXE, lydløse kommandoer, detektion og vejledning.
 ## Hele skærmen i rammen
 
 Android Live tilpasser automatisk hele Android-skærmen til tabletrammen og forhåndsvisningen. Billedet bevarer sine proportioner og bliver ikke beskåret eller strakt. Hvis rammen og enheden har forskellige formater, vises sorte kanter over/under eller ved siderne. Du kan frit gøre rammen bredere, smallere, større eller mindre. Tilpasningen følger også enhedens rotation.

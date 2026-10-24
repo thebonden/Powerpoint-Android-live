@@ -16,7 +16,7 @@ namespace AndroidLive
     /// <summary>Independent external windows per device; all Office access stays on the STA.</summary>
     public sealed class LiveAndroidController : IDisposable
     {
-        public const string Version = "0.0.107";
+        public const string Version = "0.0.108";
         public const string AnchorName = SlideIdentity.Name;
         private const string DeviceTag = SlideIdentity.Tag;
         private readonly PowerPoint.Application app;
@@ -126,7 +126,7 @@ namespace AndroidLive
             EnsureThread();
             PowerPoint.DocumentWindow document=null; PowerPoint.View view=null; PowerPoint.Slide slide=null;
             PowerPoint.Presentation presentation=null; PowerPoint.PageSetup page=null; PowerPoint.Shapes shapes=null;
-            PowerPoint.Shape shape=null; PowerPoint.TextFrame text=null; PowerPoint.TextRange range=null; PowerPoint.Tags tags=null;
+            PowerPoint.Shape shape=null; PowerPoint.Tags tags=null;
             try
             {
                 document=app.ActiveWindow;
@@ -140,7 +140,7 @@ namespace AndroidLive
                 {
                     var candidate=shapes[i];
                     string id=MarkerDevice(candidate);
-                    if(id==device.Id){shape=candidate;shape.Select();return;}
+                    if(id==device.Id){shape=candidate;WriteAnchorCaption(shape,device);shape.Select();return;}
                     if(id!=null)count++;
                     Release(candidate);
                 }
@@ -150,12 +150,19 @@ namespace AndroidLive
                 shape=shapes.AddShape(Office.MsoAutoShapeType.msoShapeRectangle,left,top,page.SlideWidth*.40f,page.SlideHeight*.35f);
                 shape.Name=device.Id=="legacy"?AnchorName:AnchorName+"_"+device.Id;
                 tags=shape.Tags; tags.Add(DeviceTag,device.Id);
-                shape.AlternativeText="Live tablet: "+device.Name+". Eksternt vindue; medtages ikke i PowerPoint-eksport.";
-                text=shape.TextFrame; range=text.TextRange;
-                range.Text=device.Name+"\nLivebillede under slideshow\n"+Version;
+                WriteAnchorCaption(shape,device);
                 shape.Select();
             }
-            finally { Release(tags);Release(range);Release(text);Release(shape);Release(shapes);Release(page);Release(presentation);Release(slide);Release(view);Release(document); }
+            finally { Release(tags);Release(shape);Release(shapes);Release(page);Release(presentation);Release(slide);Release(view);Release(document); }
+        }
+        private static void WriteAnchorCaption(PowerPoint.Shape shape,DeviceProfile device)
+        {
+            PowerPoint.TextFrame text=null; PowerPoint.TextRange range=null;
+            try {
+                shape.AlternativeText="Live tablet: "+device.ListLabel+". Eksternt vindue; medtages ikke i PowerPoint-eksport.";
+                text=shape.TextFrame;range=text.TextRange;
+                range.Text="Livebillede fra "+device.ListLabel+"\nunder slideshow";
+            } finally {Release(range);Release(text);}
         }
         private static string MarkerDevice(PowerPoint.Shape shape)
         {

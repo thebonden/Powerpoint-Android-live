@@ -1,6 +1,6 @@
 # PowerPoint Android Live
 
-**0.0.107 — development build, not accepted for production use.**
+**0.0.108 — development build, not accepted for production use.**
 
 A standalone Windows PowerPoint VSTO add-in for teaching from slides while showing a live Android tablet screen. Pair over **Wi-Fi with a QR code directly from PowerPoint**. No USB connection, OBS Studio, OBS plugin, camera bridge or Android Studio installation is required.
 
@@ -10,20 +10,20 @@ The Wi-Fi helper reuses the pairing code and ideas from the user's working OBS p
 
 ## Install without development tools
 
-Distribute **Android-Live-0.0.107-Setup.exe**, one file per recipient. Close PowerPoint, double-click the file, and click **Installer / opdater**. The launcher validates/extracts its payload to a fixed per-user appdata directory, guides missing Microsoft prerequisites, migrates recognized old Office registrations, and confirms success through VSTO's exit status and the resulting registration. It attempts to restore the previous version on failure. Settings and presentations are outside the program directory.
+Distribute **Android-Live-0.0.108-Setup.exe**, one file per recipient. Close PowerPoint, double-click the file, and click **Installer / opdater**. The launcher validates/extracts its payload to a fixed per-user appdata directory, guides missing Microsoft prerequisites, migrates recognized old Office registrations, and confirms success through VSTO's exit status and the resulting registration. It attempts to restore the previous version on failure. Settings and presentations are outside the program directory.
 
 [Installation guide (Danish)](docs/INSTALLATION.md) explains prerequisites, updates, recovery and first tablet connection. The same EXE supports silent central deployment in user context; the IT bundle includes install/uninstall commands, detection and guidance. This is not a machine-wide MSI. The outer EXE is not publicly signed; Microsoft trust prompts still apply. scrcpy is discovered/guided separately.
 
-Download the EXE from the **Android-Live-0.0.107-installation** artifact of a successful GitHub Actions run. GitHub wraps artifacts in a download ZIP; extract just the EXE and share that file. Run **scripts/package.ps1** using PowerShell 7 to build/test both the single-file installer and diagnostic ZIP. Corresponding QR source/licenses are embedded.
+Download the EXE from the **Android-Live-0.0.108-installation** artifact of a successful GitHub Actions run. GitHub wraps artifacts in a download ZIP; extract just the EXE and share that file. Run **scripts/package.ps1** using PowerShell 7 to build/test both the single-file installer and diagnostic ZIP. Corresponding QR source/licenses are embedded.
 ## Central IT deployment and neutral identity
 
-**Android-Live-0.0.107-IT.zip** contains the same EXE, Windows PowerShell wrappers, version-aware detection and [IT deployment instructions](docs/IT-DEPLOYMENT.md). Use user-context Intune/management assignments with --install --silent, --uninstall --silent and --detect. Service accounts are refused. Missing dependencies or publisher trust fail without a dialog and before removing the old add-in; PowerPoint running returns a retry code.
+**Android-Live-0.0.108-IT.zip** contains the same EXE, Windows PowerShell wrappers, version-aware detection and [IT deployment instructions](docs/IT-DEPLOYMENT.md). Use user-context Intune/management assignments with --install --silent, --uninstall --silent and --detect. Service accounts are refused. Missing dependencies or publisher trust fail without a dialog and before removing the old add-in; PowerPoint running returns a retry code.
 
 Product identity, program files, namespaces, new settings paths and development-certificate name are now **Android Live**. A small read-only compatibility class retains released identifiers for settings, registrations and slide frames. User-supplied tablet names are preserved.
 
 ## Remove a saved tablet
 
-Select the tablet and click **Fjern fra listen**, then confirm. Its live stream stops and it disappears from the saved list and status; other devices stay connected. Slides and frames remain, but frames for the removed device no longer show video. Android pairing is not revoked. Adding the device again creates a new profile: replace its old frames using **Indsæt tabletramme**. Use **Opdater valgt / QR** instead when keeping existing slide assignments.
+Select the tablet and click **Fjern fra listen**, then confirm. Its live stream stops and it disappears from the saved list and status; other devices stay connected. Slides and frames remain, but frames for the removed device no longer show video. Android pairing is not revoked. Adding the device again creates a new profile: replace its old frames using **Indsæt / opdater ramme**. Use **Opdater valgt / QR** instead when keeping existing slide assignments.
 
 ## Build
 
@@ -43,7 +43,7 @@ This builds the QR helper from source, checks its vendored QR-generator hashes, 
 2. Put PC and tablet on the same local Wi-Fi. On Android 11+, open Developer options → Wireless debugging → **Pair device with QR code**. Use that scanner, not the ordinary camera app.
 3. After pairing, a **Forhåndsvisning** window opens automatically. A connection is visible immediately, even before a slideshow. Close/toggle this preview without stopping the connection.
 4. Repeat **Tilføj tablet / QR** for additional tablets. Choose a tablet in the **Tablet** list; type a useful name in **Dit navn** beside the list and press Enter. You can rename saved devices while offline, including when reusing existing slides: the stable device/slide identity stays unchanged. **Ændr navn…** also opens the name dialog or restores automatic Android naming. The list shows Android name and custom name together, e.g. **Tablet001 — Teaching**; identical names appear once.
-5. On a slide, select the desired tablet and click **Indsæt tabletramme**. Resize and position the frame. Use different tablets on different slides, or insert several devices' frames on the same slide for simultaneous images. One frame per tablet per slide is supported. Start each required connection before the show; **Klargør / forbind alle** reconnects the saved devices.
+5. On a slide, select the desired tablet and click **Indsæt / opdater ramme**. Resize and position the frame. Use different tablets on different slides, or insert several devices' frames on the same slide for simultaneous images. One frame per tablet per slide is supported. Start each required connection before the show; **Klargør / forbind alle** reconnects the saved devices.
 6. Start the slideshow. Each frame shows its assigned device; slide navigation changes the visible feeds. Connections remain warm between slides. **Stop valgt** stops only the selected device; **Stop alle** stops them all.
 7. After a tablet changes its connection port, choose that saved tablet and use **Opdater valgt / QR** to update it without breaking existing slide assignments. **Forbind valgt** also accepts its current IPv4 connection address.
 
@@ -53,7 +53,7 @@ Keep the PPTX and the same Windows user profile. Turn on Wireless debugging, joi
 
 If a tablet cannot be found, select it and use **Opdater valgt / QR** or enter the current connection address. This updates the existing profile, retaining its stable slide key and custom name. Never recreate the slide frames just because the port changed. The device list belongs to the PC user profile and is not transferred with the PPTX to another PC.
 
-New tablets use Android's own device name (model fallback). Legacy generated names such as Tablet 1 are refreshed on the next connection. **Dit navn** saves a custom PowerPoint name directly. In **Ændr navn…**, typing also selects custom naming automatically; select **Brug enhedens Android-navn** to follow Android's name again. This choice and the last reported Android name are saved separately. Reconnection never replaces an explicitly custom name. Old non-placeholder names are conservatively preserved because earlier versions did not record their source. Existing frame captions remain as originally inserted; routing uses the stable ID.
+New tablets use Android's own device name (model fallback). Legacy generated names such as Tablet 1 are refreshed on the next connection. **Dit navn** saves a custom PowerPoint name directly. In **Ændr navn…**, typing also selects custom naming automatically; select **Brug enhedens Android-navn** to follow Android's name again. This choice and the last reported Android name are saved separately. Reconnection never replaces an explicitly custom name. Old non-placeholder names are conservatively preserved because earlier versions did not record their source. New frames read **Livebillede fra Tablet001 — Teaching / under slideshow** without a version number. To refresh an existing frame after renaming, select its tablet and use **Indsæt / opdater ramme** on that slide. The existing shape and stable routing ID are retained; text is updated only by this explicit action.
 
 ## Show the whole Android screen
 
@@ -83,4 +83,4 @@ The editing preview shows the selected tablet. During a slideshow, it hides and 
 
 The QR helper's reused GPL-2.0-or-later code and MIT QR generator retain their licenses and source under `native/WifiQr`. Keep corresponding helper source with any redistribution. CI provides both binary and helper-source artifacts.
 
-User version **0.0.107** maps to assembly/ClickOnce **0.0.107.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**
+User version **0.0.108** maps to assembly/ClickOnce **0.0.108.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**
