@@ -1,6 +1,6 @@
 # PowerPoint Android Live
 
-**0.0.102 — development build, not accepted for production use.**
+**0.0.103 — development build, not accepted for production use.**
 
 A standalone Windows PowerPoint VSTO add-in for teaching from slides while showing a live Android tablet screen. Pair over **Wi-Fi with a QR code directly from PowerPoint**. No USB connection, OBS Studio, OBS plugin, camera bridge or Android Studio installation is required.
 
@@ -10,14 +10,14 @@ The Wi-Fi helper reuses the pairing code and ideas from the user's working OBS p
 
 ## Install without development tools
 
-Distribute **Android-Live-0.0.102-Setup.exe**, one file per recipient. Close PowerPoint, double-click the file, and click **Installer / opdater**. The launcher validates/extracts its payload to a fixed per-user appdata directory, guides missing Microsoft prerequisites, migrates recognized old Office registrations, and confirms success through VSTO's exit status and the resulting registration. It attempts to restore the previous version on failure. Settings and presentations are outside the program directory.
+Distribute **Android-Live-0.0.103-Setup.exe**, one file per recipient. Close PowerPoint, double-click the file, and click **Installer / opdater**. The launcher validates/extracts its payload to a fixed per-user appdata directory, guides missing Microsoft prerequisites, migrates recognized old Office registrations, and confirms success through VSTO's exit status and the resulting registration. It attempts to restore the previous version on failure. Settings and presentations are outside the program directory.
 
 [Installation guide (Danish)](docs/INSTALLATION.md) explains prerequisites, updates, recovery and first tablet connection. The same EXE supports silent central deployment in user context; the IT bundle includes install/uninstall commands, detection and guidance. This is not a machine-wide MSI. The outer EXE is not publicly signed; Microsoft trust prompts still apply. scrcpy is discovered/guided separately.
 
-Download the EXE from the **Android-Live-0.0.102-installation** artifact of a successful GitHub Actions run. GitHub wraps artifacts in a download ZIP; extract just the EXE and share that file. Run **scripts/package.ps1** using PowerShell 7 to build/test both the single-file installer and diagnostic ZIP. Corresponding QR source/licenses are embedded.
+Download the EXE from the **Android-Live-0.0.103-installation** artifact of a successful GitHub Actions run. GitHub wraps artifacts in a download ZIP; extract just the EXE and share that file. Run **scripts/package.ps1** using PowerShell 7 to build/test both the single-file installer and diagnostic ZIP. Corresponding QR source/licenses are embedded.
 ## Central IT deployment and neutral identity
 
-**Android-Live-0.0.102-IT.zip** contains the same EXE, Windows PowerShell wrappers, version-aware detection and [IT deployment instructions](docs/IT-DEPLOYMENT.md). Use user-context Intune/management assignments with --install --silent, --uninstall --silent and --detect. Service accounts are refused. Missing dependencies or publisher trust fail without a dialog and before removing the old add-in; PowerPoint running returns a retry code.
+**Android-Live-0.0.103-IT.zip** contains the same EXE, Windows PowerShell wrappers, version-aware detection and [IT deployment instructions](docs/IT-DEPLOYMENT.md). Use user-context Intune/management assignments with --install --silent, --uninstall --silent and --detect. Service accounts are refused. Missing dependencies or publisher trust fail without a dialog and before removing the old add-in; PowerPoint running returns a retry code.
 
 Product identity, program files, namespaces, new settings paths and development-certificate name are now **Android Live**. A small read-only compatibility class retains released identifiers for settings, registrations and slide frames. User-supplied tablet names are preserved.
 
@@ -75,4 +75,4 @@ The editing preview shows the selected tablet. During a slideshow, it hides and 
 
 The QR helper's reused GPL-2.0-or-later code and MIT QR generator retain their licenses and source under `native/WifiQr`. Keep corresponding helper source with any redistribution. CI provides both binary and helper-source artifacts.
 
-User version **0.0.102** maps to assembly/ClickOnce **0.0.102.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**
+User version **0.0.103** maps to assembly/ClickOnce **0.0.103.0**. Branch remains `feature/live-android-0.0.001`. **0.1.001 requires completed testing and explicit acceptance.**

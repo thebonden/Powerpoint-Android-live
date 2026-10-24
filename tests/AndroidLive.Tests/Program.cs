@@ -16,6 +16,7 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        if (args.Length > 0 && args[0] == "--probe-live-startup") return LiveStartupProbe.Run(args);
         if (args.Length > 0 && (args[0] == "--fake-mode" || args[0] == "--powerpoint" || args[0] == "-H")) return FakeWifi(args);
         // This executable doubles as a fake scrcpy, so integration tests exercise real child-process cleanup.
         string title = args.FirstOrDefault(a => a.StartsWith("--window-title="));
@@ -76,6 +77,25 @@ internal static class Program
                 session.Stop(); session.Stop(); Await(() => !NativeWindow.IsWindow(hwnd));
                 session.Start(exe,"test"); Await(() => { session.Poll(); return session.Status.State == DeviceState.Running; });
                 session.Stop(); Equal(DeviceState.Stopped,session.Status.State);
+            }
+        });
+        Test("hidden startup HWND is not published or resized before scrcpy is ready", () => {
+            string gateName="Local\\AndroidLive-TestReady-"+Guid.NewGuid().ToString("N");
+            using(var gate=new EventWaitHandle(false,EventResetMode.ManualReset,gateName))
+            using(var session=new ScrcpySession()) {
+                session.Start(typeof(Program).Assembly.Location,"delayed:"+gateName);
+                Await(()=>session.Diagnostics.Contains("startup window created"));
+                session.Poll();
+                Equal(DeviceState.Starting,session.Status.State);
+                Equal(IntPtr.Zero,session.Window);
+                session.Hide(); // Must not hide the producer's first-show handshake.
+                gate.Set();
+                Await(()=>{session.Poll();return session.Status.State==DeviceState.Running;});
+                IntPtr ready=session.Window;
+                Check(ready!=IntPtr.Zero);
+                session.Hide(); session.Poll();
+                Equal(ready,session.Window); // Subsequent hiding must not revoke readiness.
+                Equal(DeviceState.Running,session.Status.State);
             }
         });
         Test("real process: failing start retains diagnostics", () => {
@@ -219,7 +239,21 @@ internal static class Program
             // Dead-man timer avoids an orphan helper if the test runner is interrupted.
             var timer = new System.Windows.Forms.Timer { Interval=15000 };
             timer.Tick += (s,e) => window.Close(); timer.Start();
-            Application.Run(window); timer.Dispose();
+            string delayed=args.FirstOrDefault(a=>a.StartsWith("--serial=delayed:"));
+            if(delayed!=null) {
+                // SDL creates a hidden HWND before video dimensions exist. Simulate that
+                // interval separately from Application.Run(form), which shows immediately.
+                using(var context=new ApplicationContext())
+                using(var gate=EventWaitHandle.OpenExisting(delayed.Substring("--serial=delayed:".Length)))
+                using(var ready=new System.Windows.Forms.Timer{Interval=25}) {
+                    IntPtr initial=window.Handle;
+                    Console.Error.WriteLine("startup window created");
+                    ready.Tick+=(s,e)=>{if(gate.WaitOne(0)){ready.Stop();window.Show();}};
+                    window.FormClosed+=(s,e)=>context.ExitThread();
+                    ready.Start();Application.Run(context);
+                }
+            } else Application.Run(window);
+            timer.Dispose();
         }
         return 0;
     }

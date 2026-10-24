@@ -1,5 +1,13 @@
 # Changes
 
+## 0.0.103 — 2026-10-24 (development)
+
+- Fix a startup race that could crash scrcpy 4.1 with 0xC0000094 after successful Wi-Fi pairing.
+- Wait for scrcpy to show its own off-screen video window before exposing it to preview/slideshow placement. A hidden initialization HWND is no longer treated as ready.
+- Keep the acquired window across deliberate hide/show operations, preserving slide navigation and preview behavior.
+- Add a gated child-process regression test and an opt-in real-tablet startup/resize/hide/resume probe.
+- Ship updated ordinary and IT installers; settings and slide identities are unchanged.
+
 ## 0.0.102 — 2026-10-23 (development)
 
 - Use neutral Android Live branding, assembly/project names, namespaces, settings paths and development certificate identity.

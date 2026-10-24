@@ -1,5 +1,19 @@
-# Validation — development version 0.0.102
+# Validation — development version 0.0.103
 
+## Live video startup correction — 2026-10-24
+
+- Installed 0.0.102 connected successfully to the user's tablet but scrcpy exited with -1073741676 (0xC0000094); Windows Application Error events confirmed the crash in scrcpy.exe. Saved tablet identity/options and neutral settings migration were intact.
+- A standalone six-second scrcpy 4.1 run using the same paired tablet produced a 1920x1200 texture and exited normally. The old production session/placement probe reproduced the same native crash during its third start. This isolates a window-startup race rather than a missing Wi-Fi pairing.
+- The new child-process regression creates a real hidden HWND, blocks first ShowWindow on an explicit event, and checks that no usable handle/Running state is published before the event. It failed before the fix (Expected Starting, got Running), and passes after it. It also verifies that deliberate hiding after acquisition retains readiness.
+- Local Release/package validation passed native QR checks, **56 managed add-in groups and 14 installer groups**, plus actual EXE extraction/CLI probes.
+- With the corrected production ScrcpySession and NativeWindow code, three consecutive eight-second runs against the paired Samsung SM-X356B/Android 16 passed video-texture detection, placement, resizing, hide/resume and stop. The opt-in probe does not pair, record, save device settings or access Office.
+- User installs updates themselves. The 0.0.103 add-in has not been installed or accepted inside their running PowerPoint. No presentation was changed or saved by these checks. Full installed slideshow/Presenter View and longer hardware acceptance remain pending.
+- Startup behavior was checked against [scrcpy 4.1 screen initialization](https://github.com/Genymobile/scrcpy/blob/v4.1/app/src/screen.c): the initial HWND precedes content initialization; scrcpy shows the video window after initializing its dimensions. The add-in waits for that first visibility handshake, not a fixed sleep or log-text timing.
+
+Optional developer-only hardware probe, after building tests:
+    AndroidLive.Tests.exe --probe-live-startup "<full scrcpy.exe path>" "<paired IPv4:port>"
+
+Use an already paired test tablet. The probe opens its own temporary preview, performs three runs and closes only its own streams. It is never run by CI or package installation.
 ## Neutral identity and central deployment — 2026-10-23
 
 - Local Release/package build passed native QR checks, 55 managed add-in test groups and 14 installer test groups. The actual EXE passed payload verification and CLI probes. Deployment scripts passed PowerShell syntax validation; both distribution archives were inspected. No 0.0.102 installation or Office registration change was performed by the agent.

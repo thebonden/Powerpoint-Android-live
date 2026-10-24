@@ -48,7 +48,16 @@ namespace AndroidLive
         {
             if (process == null) return;
             bool exited = process.HasExited;
-            if (!exited && Window == IntPtr.Zero) window = NativeWindow.FindVideo(process.Id, title);
+            if (!exited && Window == IntPtr.Zero)
+            {
+                // SDL creates its HWND before scrcpy has initialized video dimensions.
+                // Adopting/resizing that hidden window can crash scrcpy (0xC0000094).
+                // Wait for scrcpy's own first ShowWindow, off-screen by our launch args.
+                // Once adopted, keep the handle while the overlay deliberately hides it.
+                IntPtr candidate = NativeWindow.FindVideo(process.Id, title);
+                if (candidate != IntPtr.Zero && NativeWindow.IsWindowVisible(candidate))
+                    window = candidate;
+            }
             if (Status.Poll(DateTime.UtcNow, exited, exited ? process.ExitCode : 0, Window != IntPtr.Zero)) Release();
         }
         private void Capture(object sender, DataReceivedEventArgs e)

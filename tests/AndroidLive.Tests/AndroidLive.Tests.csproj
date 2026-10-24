@@ -8,7 +8,7 @@
   </PropertyGroup>
   <ItemGroup><Reference Include="System"/><Reference Include="System.Core"/><Reference Include="System.Xml"/><Reference Include="System.Drawing"/><Reference Include="System.Windows.Forms"/></ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs"/><Compile Include="CompatibilityTests.cs"/><Compile Include="MultiDeviceTests.cs"/><Compile Include="DeviceDiscoveryTests.cs"/>
+    <Compile Include="Program.cs"/><Compile Include="LiveStartupProbe.cs"/><Compile Include="CompatibilityTests.cs"/><Compile Include="MultiDeviceTests.cs"/><Compile Include="DeviceDiscoveryTests.cs"/>
     <Compile Include="ScrcpyDiscoveryTests.cs"/>
     <Compile Include="ShadowCopyProbe.cs"/>
     <Compile Include="..\..\src\AndroidLive.Core\*.cs"/>
