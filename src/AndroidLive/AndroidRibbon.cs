@@ -43,7 +43,7 @@ namespace AndroidLive
             return addIn.Controller?.OverlayEnabled??false;
         }
         public int GetDeviceCount(Office.IRibbonControl control)=>Math.Max(1,settings.Devices.Count);
-        public string GetDeviceLabel(Office.IRibbonControl control,int index)=>settings.Devices.Count==0?"Tilføj en tablet":settings.Devices[index].Name;
+        public string GetDeviceLabel(Office.IRibbonControl control,int index)=>settings.Devices.Count==0?"Tilføj en tablet":settings.Devices[index].ListLabel;
         public string GetDeviceId(Office.IRibbonControl control,int index)=>settings.Devices.Count==0?"NoDevice":settings.Devices[index].Id;
         public int GetDeviceIndex(Office.IRibbonControl control)=>Math.Max(0,settings.Devices.FindIndex(d=>d.Id==settings.SelectedDeviceId));
         public void OnDeviceSelected(Office.IRibbonControl control,string id,int index)
@@ -112,6 +112,22 @@ namespace AndroidLive
         {Run(()=>{addIn.Controller.SelectDevice(settings.Selected);addIn.Controller.TogglePreview();});}
         public void OnRename(Office.IRibbonControl control)
         {Run(()=>{if(settings.Selected==null)return;using(var dialog=new RenameDialog(settings))dialog.ShowDialog();addIn.Controller.SelectDevice(settings.Selected);});}
+        public void OnRemoveDevice(Office.IRibbonControl control)
+        {
+            Run(()=>{
+                var device=settings.Selected;if(device==null)return;
+                if(MessageBox.Show("Fjern "+device.ListLabel+" fra listen?\n\n"+
+                    "Enhedens livebillede stoppes. Dine slides og rammer bevares, men rammer til denne enhed viser ikke længere livebillede.",
+                    "Fjern enhed",MessageBoxButtons.YesNo,MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button2)!=DialogResult.Yes)return;
+                var previousDevices=settings.Devices.ToList();
+                string previousSelected=settings.SelectedDeviceId,previousSerial=settings.Serial;
+                try{settings.RemoveDevice(device.Id);settings.Save();}
+                catch{settings.Devices=previousDevices;settings.SelectedDeviceId=previousSelected;settings.Serial=previousSerial;throw;}
+                addIn.Controller.RemoveDevice(device.Id);
+                addIn.Controller.SelectDevice(settings.Selected);
+            });
+        }
         public void OnSettings(Office.IRibbonControl control)
         {Run(()=>{using(var dialog=new SettingsDialog(settings))dialog.ShowDialog();addIn.Controller.SelectDevice(settings.Selected);});}
         public void OnStatus(Office.IRibbonControl control)

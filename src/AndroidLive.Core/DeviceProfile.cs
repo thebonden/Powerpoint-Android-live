@@ -15,6 +15,17 @@ namespace AndroidLive.Core
         public string Name { get; set; } = "Tablet";
         public string AndroidName { get; set; } = "";
         public DeviceNameMode NameMode { get; set; }
+        internal string ListLabel
+        {
+            get {
+                string android=DeviceDiscovery.Clean(AndroidName,60);
+                string label=DeviceDiscovery.Clean(Name,60);
+                if(android.Length==0)return NameMode==DeviceNameMode.Custom
+                    ? "Android-navn ikke hentet — "+label : (label.Length==0?"Tablet":label);
+                return label.Length==0 || string.Equals(android,label,StringComparison.Ordinal)
+                    ? android : android+" — "+label;
+            }
+        }
         internal void NormalizeNameMode()
         {
             if(!Enum.IsDefined(typeof(DeviceNameMode),NameMode))NameMode=DeviceNameMode.Legacy;

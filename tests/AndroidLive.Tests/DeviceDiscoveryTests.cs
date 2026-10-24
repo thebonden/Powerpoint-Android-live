@@ -52,6 +52,37 @@ internal static class DeviceDiscoveryTests
             Check(loaded.Devices[0].Name=="Nyt Android-navn"&&loaded.Devices[1].Name=="Mit navn");
             Check(loaded.Devices[0].Id==automatic.Id&&loaded.Devices[1].Id==custom.Id);
         });
+        test("device list shows Android identity and custom alias after reconnect and reload",()=>{
+            var settings=new UserSettings();
+            var device=settings.AcceptConnection(null,new DeviceConnection{Endpoint="10.0.0.8:4444",Name="Tablet001",Serial="one"});
+            Check(device.ListLabel=="Tablet001");
+            device.SetCustomName("Undervisning");Check(device.ListLabel=="Tablet001 — Undervisning");
+            device.ApplyAndroidName("Tablet002");Check(device.ListLabel=="Tablet002 — Undervisning");
+            var xml=new XmlSerializer(typeof(UserSettings));var text=new StringWriter();xml.Serialize(text,settings);
+            var loaded=(UserSettings)xml.Deserialize(new StringReader(text.ToString()));loaded.Normalize();
+            Check(loaded.Selected.ListLabel=="Tablet002 — Undervisning"&&loaded.Selected.Id==device.Id);
+            loaded.Selected.SetCustomName("Tablet002");Check(loaded.Selected.ListLabel=="Tablet002");
+            var old=new DeviceProfile{Name="Min tablet"};old.NormalizeNameMode();
+            Check(old.ListLabel=="Android-navn ikke hentet — Min tablet");
+        });
+        test("removing last legacy device survives save and reload without resurrection",()=>{
+            var settings=new UserSettings{Serial="10.0.0.8:4444"};settings.Normalize();
+            Check(settings.RemoveDevice("legacy"));settings.Normalize();
+            Check(settings.Devices.Count==0&&settings.SelectedDeviceId==""&&settings.Serial=="");
+            string path=Path.Combine(Path.GetTempPath(),"AndroidLive-remove-"+Guid.NewGuid().ToString("N")+".xml");
+            settings.SaveTo(path);var loaded=UserSettings.LoadFrom(path,path+".missing");
+            Check(loaded.Devices.Count==0&&loaded.Selected==null);
+        });
+        test("removal preserves other device identity, options and deterministic selection",()=>{
+            var settings=new UserSettings();
+            foreach(string id in new[]{"a","b","c"})settings.Devices.Add(new DeviceProfile{Id=id,Name=id,Audio=true});
+            settings.SelectedDeviceId="b";
+            Check(settings.RemoveDevice("b")&&settings.SelectedDeviceId=="c");
+            Check(settings.Devices.Select(d=>d.Id).SequenceEqual(new[]{"a","c"})&&settings.Devices.All(d=>d.Audio));
+            Check(!settings.RemoveDevice("missing")&&settings.SelectedDeviceId=="c");
+            Check(settings.RemoveDevice("a")&&settings.SelectedDeviceId=="c");
+            Check(settings.RemoveDevice("c")&&settings.SelectedDeviceId=="");
+        });
         test("new tablet at reused IP does not steal another tablet's saved slides",()=>{
             var settings=new UserSettings();
             var first=settings.AcceptConnection(null,new DeviceConnection{Endpoint="10.0.0.8:4444",Name="First",Serial="one"});

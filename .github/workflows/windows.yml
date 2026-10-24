@@ -19,28 +19,28 @@ jobs:
       - name: Upload installation package
         uses: actions/upload-artifact@v4
         with:
-          name: Android-Live-0.0.105-installation
+          name: Android-Live-0.0.106-installation
           path: |
-            artifacts/Android-Live-0.0.105-IT.zip
-            artifacts/Android-Live-0.0.105-IT.zip.sha256
-            artifacts/Android-Live-0.0.105-Setup.exe
-            artifacts/Android-Live-0.0.105-Setup.exe.sha256
-            artifacts/Android-Live-0.0.105-installation.zip
+            artifacts/Android-Live-0.0.106-IT.zip
+            artifacts/Android-Live-0.0.106-IT.zip.sha256
+            artifacts/Android-Live-0.0.106-Setup.exe
+            artifacts/Android-Live-0.0.106-Setup.exe.sha256
+            artifacts/Android-Live-0.0.106-installation.zip
 
-            artifacts/Android-Live-0.0.105-installation.zip.sha256
+            artifacts/Android-Live-0.0.106-installation.zip.sha256
           if-no-files-found: error
           retention-days: 90
       - name: Upload development build (no signing key)
         uses: actions/upload-artifact@v4
         with:
-          name: Android-Live-0.0.105-development
+          name: Android-Live-0.0.106-development
           path: src/AndroidLive/bin/Release/
           if-no-files-found: error
           retention-days: 14
       - name: Upload matching source and license notices
         uses: actions/upload-artifact@v4
         with:
-          name: Android-Live-0.0.105-source
+          name: Android-Live-0.0.106-source
           path: |
             native/WifiQr/
             scripts/build-wifi-helper.ps1

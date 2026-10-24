@@ -16,7 +16,7 @@ $key = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($registryPath)
 try {
     $old = $key.GetValue('Manifest')
     if ($old -and $old -ne $uri) { throw 'Another copy is registered. Unregister that copy before registering this one.' }
-    $key.SetValue('FriendlyName','Android Live 0.0.105')
+    $key.SetValue('FriendlyName','Android Live 0.0.106')
     $key.SetValue('Description','Android live window overlay; not embedded video')
     $key.SetValue('Manifest',$uri)
     $key.SetValue('LoadBehavior',3,[Microsoft.Win32.RegistryValueKind]::DWord)

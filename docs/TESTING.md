@@ -1,4 +1,13 @@
-# Validation — development version 0.0.105
+# Validation — development version 0.0.106
+
+## Dual device names and removal — 2026-10-24
+
+- The list displays the stored Android name plus the custom alias; equal names are not repeated. Unknown Android metadata is identified explicitly.
+- Release/package validation: 62 managed groups and 14 installer groups, native QR tests and actual EXE payload/CLI checks.
+- Regression coverage checks labels after reconnection and XML reload, removing the last legacy profile without resurrection, missing IDs, deterministic selection and preservation of other profiles.
+- The two-child-process test removes one running stream and verifies its window is destroyed, its session entry is absent and the other process remains running with the same window.
+- Removal requires user confirmation and saves settings before stopping the stream. Save failure restores the previous in-memory list/selection. Slides and Android pairing are not changed.
+- Installed ribbon/confirmation acceptance remains pending: cancel removal, remove selected and last devices, restart PowerPoint and verify other feeds/frames. No real saved device was removed and no Office installation was performed by the agent.
 
 ## Default Android names and explicit custom names — 2026-10-24
 

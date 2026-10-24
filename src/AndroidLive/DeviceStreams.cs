@@ -19,6 +19,12 @@ namespace AndroidLive
             return session;
         }
         internal void Stop(string id) { Get(id)?.Stop(); }
+        internal void Remove(string id)
+        {
+            var session=Get(id);
+            if(session==null)return;
+            session.Dispose(); sessions.Remove(id);
+        }
         internal void HideAll() { foreach (var item in All) item.Value.Hide(); }
         public void Dispose() { foreach (var item in All) item.Value.Dispose(); sessions.Clear(); }
     }

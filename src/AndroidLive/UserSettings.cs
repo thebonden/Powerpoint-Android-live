@@ -34,6 +34,17 @@ namespace AndroidLive
             SelectedDeviceId=device.Id;
             return device;
         }
+        internal bool RemoveDevice(string id)
+        {
+            int index=Devices.FindIndex(d=>d.Id==id);
+            if(index<0)return false;
+            Devices.RemoveAt(index);
+            // Retired single-device migration data must not recreate a removed profile.
+            Serial="";
+            if(SelectedDeviceId==id)
+                SelectedDeviceId=Devices.Count==0?"":Devices[Math.Min(index,Devices.Count-1)].Id;
+            return true;
+        }
         public void Normalize()
         {
             if (Devices == null) Devices = new List<DeviceProfile>();

@@ -1,5 +1,14 @@
 # Changes
 
+## 0.0.106 — 2026-10-24 (development)
+
+- Show Android device name and custom PowerPoint alias together in the tablet list, without repeating equal names.
+- Clearly indicate an unavailable Android name while preserving the user's alias.
+- Add confirmed removal of a saved device, stopping and disposing only its stream and removing its status entry.
+- Persist removal, prevent legacy single-device settings from resurrecting a removed tablet, and select the next remaining device.
+- Preserve slides, other device identities/options and Android pairing; document that removed-device frames need replacement if the device is added again.
+- Include regression coverage for dual-name persistence, last-device removal, independent selection and live-process cleanup.
+
 ## 0.0.105 — 2026-10-24 (development)
 
 - Refresh Android names for existing generated Tablet/Tablet N profiles, not only newly added devices.

@@ -65,7 +65,7 @@ internal static class MultiDeviceTests
             Check(copy.Devices.Count==2&&copy.Selected.Id=="b"&&!copy.Selected.Audio&&copy.Selected.ShowTouches);
             Check(copy.Devices[0].Audio&&copy.Devices[0].Name=="Tablet Æ"&&copy.Devices[0].Orientation==VideoOrientation.Landscape);
         });
-        test("two live processes remain independent across stop, restart and failure",()=>{
+        test("two live processes remain independent across stop, restart, failure and removal",()=>{
             string exe=typeof(MultiDeviceTests).Assembly.Location;
             using(var streams=new DeviceStreams()){
                 var first=streams.Start("a",exe,"test-a",false,true,"@0");
@@ -81,6 +81,11 @@ internal static class MultiDeviceTests
                 Await(()=>{first.Poll();return first.Status.State==DeviceState.Running;});
                 Check(first.Window!=secondWindow);streams.HideAll();
                 Check(!NativeWindow.IsWindowVisible(first.Window)&&!NativeWindow.IsWindowVisible(second.Window));
+                firstWindow=first.Window;
+                streams.Remove("a");Await(()=>!NativeWindow.IsWindow(firstWindow));
+                Check(streams.Get("a")==null&&streams.All.Count()==1);
+                second.Poll();Check(second.Window==secondWindow&&second.Status.State==DeviceState.Running);
+                streams.Remove("a");streams.Remove(null);Check(streams.All.Count()==1);
             }
         });
     }

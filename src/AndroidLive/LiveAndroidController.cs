@@ -16,7 +16,7 @@ namespace AndroidLive
     /// <summary>Independent external windows per device; all Office access stays on the STA.</summary>
     public sealed class LiveAndroidController : IDisposable
     {
-        public const string Version = "0.0.105";
+        public const string Version = "0.0.106";
         public const string AnchorName = SlideIdentity.Name;
         private const string DeviceTag = SlideIdentity.Tag;
         private readonly PowerPoint.Application app;
@@ -101,6 +101,13 @@ namespace AndroidLive
             if(pending.TryGetValue(id,out var cancel)){pending.Remove(id);cancel.Cancel();}
             streams.Stop(id);
             if(selectedId==id)preview.Hide();
+            Changed();
+        }
+        internal void RemoveDevice(string id)
+        {
+            EnsureThread(); if(id==null)return;
+            StopDevice(id); streams.Remove(id); names.Remove(id);
+            if(selectedId==id)selectedId="";
             Changed();
         }
         public void StopDevice()
