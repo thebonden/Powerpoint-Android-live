@@ -1,0 +1,12 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <ItemGroup>
+    <Prerequisite Include=".NETFramework,Version=v4.8"><Install>true</Install></Prerequisite>
+    <Prerequisite Include="Microsoft.VSTORuntime.4.0"><Install>true</Install></Prerequisite>
+  </ItemGroup>
+  <Target Name="Build">
+    <GenerateBootstrapper ApplicationName="Android Live - Microsoft components"
+      BootstrapperItems="@(Prerequisite)" ComponentsLocation="HomeSite"
+      Culture="en" FallbackCulture="en" OutputPath="$(OutputPath)"
+      VisualStudioVersion="$(VisualStudioVersion)" />
+  </Target>
+</Project>

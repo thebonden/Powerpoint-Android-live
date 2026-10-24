@@ -1,0 +1,97 @@
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using AndroidLive.Core;
+
+namespace AndroidLive
+{
+    internal sealed class ScrcpySession : IDisposable
+    {
+        private Process process;
+        private string title;
+        private IntPtr window;
+        private readonly object logLock = new object();
+        private string log = "";
+        internal SessionState Status { get; } = new SessionState();
+        internal string Diagnostics { get { lock (logLock) return log; } }
+        internal IntPtr Window => window != IntPtr.Zero && process != null && NativeWindow.IsOwnedBy(window, process.Id) ? window : IntPtr.Zero;
+
+        internal void Start(string executable, string serial, bool audio = false, bool touches = false, string orientation = null)
+        {
+            Stop();
+            if (!Path.IsPathRooted(executable ?? "") || !File.Exists(executable) ||
+                !string.Equals(Path.GetExtension(executable), ".exe", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Choose the full path to the official scrcpy.exe in Settings.");
+            title = "Android Live Project-LIVE-" + Guid.NewGuid().ToString("N");
+            lock (logLock) log = "";
+            var start = new ProcessStartInfo(executable, ScrcpyArguments.Build(title, serial, audio, touches, orientation))
+            {
+                WorkingDirectory = Path.GetDirectoryName(executable), UseShellExecute = false,
+                CreateNoWindow = true, RedirectStandardError = true, RedirectStandardOutput = true
+            };
+            LocalCommand.SetAdbEnvironment(start, Path.Combine(Path.GetDirectoryName(executable), "adb.exe"));
+            process = new Process { StartInfo = start };
+            process.ErrorDataReceived += Capture;
+            process.OutputDataReceived += Capture;
+            try
+            {
+                Status.Start(DateTime.UtcNow);
+                if (!process.Start()) throw new InvalidOperationException("Could not start scrcpy.");
+                process.BeginErrorReadLine();
+                process.BeginOutputReadLine();
+            }
+            catch (Exception ex) { Release(); Status.Fail(ex.Message); throw; }
+        }
+        // Called only by the UI-thread timer: no COM access from process callbacks.
+        internal void Poll()
+        {
+            if (process == null) return;
+            bool exited = process.HasExited;
+            if (!exited && Window == IntPtr.Zero)
+            {
+                // SDL creates its HWND before scrcpy has initialized video dimensions.
+                // Adopting/resizing that hidden window can crash scrcpy (0xC0000094).
+                // Wait for scrcpy's own first ShowWindow, off-screen by our launch args.
+                // Once adopted, keep the handle while the overlay deliberately hides it.
+                IntPtr candidate = NativeWindow.FindVideo(process.Id, title);
+                if (candidate != IntPtr.Zero && NativeWindow.IsWindowVisible(candidate))
+                    window = candidate;
+            }
+            if (Status.Poll(DateTime.UtcNow, exited, exited ? process.ExitCode : 0, Window != IntPtr.Zero)) Release();
+        }
+        private void Capture(object sender, DataReceivedEventArgs e)
+        {
+            if (!ReferenceEquals(sender, process) || string.IsNullOrEmpty(e.Data)) return;
+            lock (logLock)
+            {
+                log += e.Data + Environment.NewLine;
+                if (log.Length > 8192) log = log.Substring(log.Length - 8192);
+            }
+        }
+        internal void Hide() { NativeWindow.Hide(Window); }
+        internal void Stop() { Release(); Status.Stop(); }
+        private void Release()
+        {
+            if (process == null) return;
+            var owned = process;
+            Hide();
+            NativeWindow.Close(Window);
+            try
+            {
+                // Bounded wait only on explicit stop/shutdown/failure, never on each slide change.
+                if (!owned.HasExited && !owned.WaitForExit(1500)) owned.Kill();
+            }
+            catch (InvalidOperationException) { }
+            catch (Win32Exception ex) { lock (logLock) log += "Stop: " + ex.Message; }
+            finally
+            {
+                owned.ErrorDataReceived -= Capture;
+                owned.OutputDataReceived -= Capture;
+                owned.Dispose();
+                process = null; window = IntPtr.Zero; title = null;
+            }
+        }
+        public void Dispose() { Stop(); }
+    }
+}
