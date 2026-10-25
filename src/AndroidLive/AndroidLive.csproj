@@ -125,9 +125,9 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <PropertyGroup>
-    <FriendlyName>Android Live 0.0.110</FriendlyName>
+    <FriendlyName>Android Live 0.0.111</FriendlyName>
     <Description>Android live window overlay for PowerPoint</Description>
-    <ApplicationVersion>0.0.110.0</ApplicationVersion>
+    <ApplicationVersion>0.0.111.0</ApplicationVersion>
     <GenerateManifests>true</GenerateManifests>
     <LangVersion>7.3</LangVersion>
     <SignManifests>true</SignManifests>
@@ -156,7 +156,7 @@
     <Compile Include="AndroidRibbon.cs" />
     <Compile Include="SettingsDialog.cs" />
     <Compile Include="UserSettings.cs" /><Compile Include="..\AndroidLive.Core\LegacyCompatibility.cs" />
-    <Compile Include="DeviceStreams.cs" /><Compile Include="PreviewWindow.cs" />
+    <Compile Include="DeviceStreams.cs" /><Compile Include="PreviewWindow.cs" /><Compile Include="WaitingWindow.cs" /><Compile Include="..\AndroidLive.Core\FrameWaitingState.cs" />
     <Compile Include="..\AndroidLive.Core\DeviceProfile.cs" />
     <Compile Include="ScrcpySession.cs" />
     <Compile Include="NativeWindow.cs" />

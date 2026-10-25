@@ -1,12 +1,12 @@
-# Android Live 0.0.110 · Central IT deployment
+# Android Live 0.0.111 · Central IT deployment
 
 This bundle supports central distribution of the same per-user Office add-in through Intune Win32 apps or equivalent software management. Install and uninstall run silently. It is not a machine-wide MSI: registration and device settings belong to each Windows user. Never run this package as SYSTEM, LocalService or NetworkService; it returns 1625 instead of installing into a service profile.
 
 ## Package contents
 
-- Android-Live-0.0.110-Setup.exe: interactive and managed installation in the same binary.
+- Android-Live-0.0.111-Setup.exe: interactive and managed installation in the same binary.
 - Install.ps1 and Uninstall.ps1: optional Windows PowerShell 5.1 wrappers forwarding the process exit code.
-- Detect.ps1: custom user-context detection, requiring the neutral registration, fixed manifest path and minimum version 0.0.110.0.
+- Detect.ps1: custom user-context detection, requiring the neutral registration, fixed manifest path and minimum version 0.0.111.0.
 - This guide. The EXE embeds the matching QR-helper source and licenses.
 
 ## Prerequisites controlled by IT
@@ -25,9 +25,9 @@ The silent path never launches the interactive Microsoft prerequisite bootstrapp
 1. Use Microsoft's Win32 Content Prep Tool to wrap this folder as an .intunewin package. The EXE is the setup file.
 2. Set **Install behavior: User** and target the intended user groups. Do not choose System or attempt interactive service/session injection.
 3. Install command:
-   Android-Live-0.0.110-Setup.exe --install --silent
+   Android-Live-0.0.111-Setup.exe --install --silent
 4. Uninstall command:
-   Android-Live-0.0.110-Setup.exe --uninstall --silent
+   Android-Live-0.0.111-Setup.exe --uninstall --silent
 5. Detection: upload Detect.ps1 as a custom detection script; run in 64-bit/user context. It returns exit 0 plus stdout only when this or a newer neutral version is installed.
 6. Configure prerequisite dependencies, return codes and a small pilot assignment. Validate normal PowerPoint startup in the target user's desktop session.
 

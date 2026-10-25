@@ -1,5 +1,14 @@
 # Changes
 
+## 0.0.111 — 2026-10-25 (development)
+
+- Show a plain dark cover while a slideshow frame has no live video; delay BOTH the waiting text and tablet/Wi-Fi icon by 15 seconds.
+- Replace the cover immediately when video is available; the delay never holds back ready video beyond the existing slide-transition guard.
+- Track waiting independently per device, reset on slide visits and new outages, and cover offline profiles without a running process.
+- Use both Android and custom names in the waiting message. Keep editor captions and saved presentations untouched.
+- Hide/detach covers on background, black/white/pause, overlay disable, show end and disposal; discard unused windows.
+- Add boundary, recovery, multi-device, navigation, actual painting and nonactivation/lifetime tests.
+- User confirmed the 0.0.110 automatic-start fix works; .111 installed slideshow/transition acceptance remains pending.
 ## 0.0.110 — 2026-10-25 (development)
 
 - Fix automatic startup/recovery failing with “Call the controller on PowerPoint's UI thread” despite an authenticated tablet connection.

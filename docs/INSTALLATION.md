@@ -1,9 +1,9 @@
-# Nem installation · Android Live 0.0.110
+# Nem installation · Android Live 0.0.111
 
-Del **Android-Live-0.0.110-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
+Del **Android-Live-0.0.111-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
 
 1. Gem præsentationen, og luk PowerPoint.
-2. Dobbeltklik på **Android-Live-0.0.110-Setup.exe**.
+2. Dobbeltklik på **Android-Live-0.0.111-Setup.exe**.
 3. Klik **Installer / opdater**, og følg eventuelle Microsoft-vinduer.
 4. Når installationsprogrammet skriver **Færdig**, start PowerPoint normalt.
 
@@ -63,7 +63,7 @@ Enhedslisten tilhører pc'ens brugerprofil. Flytning af PPTX til en anden pc ove
 
 Programmet hedder **Android Live**. Organisationsnavnet er fjernet fra produktnavn, nye programfiler, namespaces, certifikatnavn og nye datamapper. Gamle identifikatorer findes kun i kompatibilitetskoden, så tidligere installerede udgaver, gemte tabletindstillinger og eksisterende slides kan migreres. Dine egne tablet-navne ændres ikke.
 
-Der er to leverancer: **Android-Live-0.0.110-Setup.exe** til almindelig installation og **Android-Live-0.0.110-IT.zip** til IT med samme EXE, lydløse kommandoer, detektion og vejledning.
+Der er to leverancer: **Android-Live-0.0.111-Setup.exe** til almindelig installation og **Android-Live-0.0.111-IT.zip** til IT med samme EXE, lydløse kommandoer, detektion og vejledning.
 ## Hele skærmen i rammen
 
 Android Live tilpasser automatisk hele Android-skærmen til tabletrammen og forhåndsvisningen. Billedet bevarer sine proportioner og bliver ikke beskåret eller strakt. Hvis rammen og enheden har forskellige formater, vises sorte kanter over/under eller ved siderne. Du kan frit gøre rammen bredere, smallere, større eller mindre. Tilpasningen følger også enhedens rotation.
@@ -89,3 +89,8 @@ Ni timers drift er testet med simuleret tid og gentagne udfald i programtests. E
 Version 0.0.110 retter en fejl i 0.0.109, hvor genforbindelsen fandt tabletten, men videostarten blev afvist på grund af forkert programtråd. **Status** viste i dette tilfælde “Call the controller on PowerPoint's UI thread.”
 
 Indtil opdateringen er installeret, kan **Forbind valgt** starte den gemte forbindelse uden ny QR. I redigeringsvisning ses billedet i **Forhåndsvisning**; på selve sliden vises det under slideshow, når enhedens ramme er indsat og **Vis livebilleder** er slået til. Den automatiske opstart åbner ikke forhåndsvisningsvinduet af sig selv.
+## Rolig start på slides med livebillede
+
+I 0.0.111 dækker et tomt, mørkt felt redigeringsteksten, mens livebilledet mangler. **Både ikon og ventetekst er skjult de første 15 sekunder.** Derefter vises et tabletikon og “Venter på forbindelse til” med enhedsnavn og dit eget navn. Livebilledet vises, så snart det er klar; de 15 sekunder forsinker kun ventevisningen. Hver tablet har sin egen ventetid.
+
+Ved et nyt forbindelsesudfald starter de 15 sekunder forfra. Slidens gemte tekst ændres ikke. Ventefelt og video er eksterne vinduer, som følger slideshowet; animerede rammer og særlige overgange skal afprøves på den konkrete opsætning.

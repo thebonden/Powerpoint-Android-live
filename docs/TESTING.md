@@ -1,5 +1,16 @@
-# Validation — development version 0.0.110
+# Validation — development version 0.0.111
 
+## Delayed waiting surface — 2026-10-25
+
+- The user confirmed 0.0.110 works, then requested no initial icon or text: both should appear only after 15 seconds without video.
+- Frame iteration now covers saved/offline devices even before a scrcpy session exists. The plain dark surface is independent from the existing transition guard on live windows.
+- Monotonic per-device timing tests cover 14.999/15-second boundaries, immediate video, a new outage, independent devices, repeated retries, forward/backward navigation and a new show.
+- Actual WinForms rendering tests verify every pixel is plain before the delay and the graphic/text disappears again on reset. Window tests exercise placement, hide, reuse and disposal without foreground activation.
+- Local Release/package validation: **82 managed and 14 installer test groups**, native QR tests and actual EXE payload/CLI verification all passed. Rendered 600×360, 240×150 and 720×240 samples; inspected the normal/small waiting graphic and completely blank pre-delay field.
+- Editor text, names, tags, geometry, animation and presentation Saved state are never mutated by the waiting UI.
+- Installed Office acceptance remains pending: fast video must skip waiting content; disconnected tablet must show blank through 15 seconds then both names/icon; reconnect must replace it; repeat with two devices, forward/back navigation, B/W/pause, background/minimize, resize and show end.
+- Specifically check for caption flashes during slide entry and animated transitions on the target hardware. The surface is an external rectangle and does not animate with slide objects. It cannot mask off-rectangle moving text or a frame before Office exposes the incoming slide; static rectangular frames remain the supported arrangement.
+- Event handling re-reads the displayed slide rather than assuming next index, per [SlideShowNextSlide](https://learn.microsoft.com/en-us/office/vba/api/powerpoint.application.slideshownextslide). The controller's timer remains the fallback when foreground/incoming-slide state is not yet available at event time.
 ## Confirmed automatic-start UI thread failure — 2026-10-25
 
 - Installed 0.0.109 had a saved endpoint/identity and an authenticated ADB connection, but no scrcpy process. The PowerPoint Status dialog reported “Call the controller on PowerPoint's UI thread” while automatic recovery retried.
@@ -7,7 +18,7 @@
 - Replace reliance on the ambient Office context with an owned STA dispatch window used at every asynchronous timer/manual/ribbon entry.
 - Real message-pump tests exercise null and generic replacement synchronization contexts, nested awaits/cancellation, caller-context restoration and disposal while a continuation is outstanding.
 - Local Release/package validation: **76 managed groups and 14 installer groups**, native QR tests and actual EXE payload/CLI verification.
-- Installed automatic startup/recovery with 0.0.110 remains pending; the agent did not install the update. The real preview check was on the user's installed 0.0.109.
+- The user subsequently confirmed 0.0.110 works. The agent did not install the update; the earlier agent-run real preview check was on installed 0.0.109.
 - No device addresses, identifiers or screenshot contents are committed. Nine-hour physical Wi-Fi endurance and Presenter View acceptance remain pending.
 
 ## Restart, idle recovery and teaching-day simulation — 2026-10-25

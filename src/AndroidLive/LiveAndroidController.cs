@@ -16,7 +16,7 @@ namespace AndroidLive
     /// <summary>Independent external windows per device; all Office access stays on the STA.</summary>
     public sealed class LiveAndroidController : IDisposable
     {
-        public const string Version = "0.0.110";
+        public const string Version = "0.0.111";
         public const string AnchorName = SlideIdentity.Name;
         private const string DeviceTag = SlideIdentity.Tag;
         private readonly PowerPoint.Application app;
@@ -29,6 +29,9 @@ namespace AndroidLive
         private readonly Dictionary<string,string> names = new Dictionary<string,string>();
         private readonly System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer { Interval = 100 };
         private readonly PreviewWindow preview = new PreviewWindow();
+        private readonly Dictionary<string, WaitingWindow> covers = new Dictionary<string, WaitingWindow>();
+        private readonly FrameWaitingState frameWaiting = new FrameWaitingState();
+        private readonly System.Diagnostics.Stopwatch frameClock = System.Diagnostics.Stopwatch.StartNew();
         private readonly int uiThread = Thread.CurrentThread.ManagedThreadId;
         private bool enabled = true, disposed, previewRequested;
         private string selectedId = "legacy";
@@ -67,7 +70,7 @@ namespace AndroidLive
         internal void SelectDevice(DeviceProfile profile)
         {
             EnsureThread(); if(profile==null)return;
-            selectedId=profile.Id; names[profile.Id]=profile.Name; Changed();
+            selectedId=profile.Id; names[profile.Id]=profile.ListLabel; Changed();
         }
         internal Task RunOnUiAsync(Func<Task> action){EnsureThread();return uiContext.RunAsync(action);}
         internal Task StartDeviceAsync(string executable, DeviceProfile profile, bool showPreview = true, Action persist = null)
@@ -76,7 +79,7 @@ namespace AndroidLive
         {
             EnsureThread();StopDevice(profile.Id);
             var cancel=new CancellationTokenSource();pending[profile.Id]=cancel;
-            names[profile.Id]=profile.Name;Changed();
+            names[profile.Id]=profile.ListLabel;Changed();
             try
             {
                 await StartStreamAsync(executable,profile,cancel.Token);
@@ -99,13 +102,13 @@ namespace AndroidLive
                 connection.Endpoint,profile.Orientation,cancel);
             cancel.ThrowIfCancellationRequested();EnsureThread();
             profile.Endpoint=connection.Endpoint;profile.HardwareSerial=connection.Serial;
-            profile.ApplyAndroidName(connection.Name);names[profile.Id]=profile.Name;
+            profile.ApplyAndroidName(connection.Name);names[profile.Id]=profile.ListLabel;
             streams.Start(profile.Id,executable,profile.Endpoint,profile.Audio,profile.ShowTouches,capture);
             notices.Remove(profile.Id);
         }
         internal void ResumeDevice(string executable,DeviceProfile profile,Action persist)
         {
-            EnsureThread();names[profile.Id]=profile.Name;
+            EnsureThread();names[profile.Id]=profile.ListLabel;
             if(!profile.ReconnectOnStartup)return;
             if(!ScrcpyLocator.IsComplete(executable)){
                 notices[profile.Id]="Find scrcpy under Indstillinger, og vælg Forbind valgt.";return;
@@ -153,7 +156,7 @@ namespace AndroidLive
             pending.Clear(); streams.Dispose(); preview.Hide(); previewRequested=false; Changed();
         }
         public void ToggleOverlay()
-        { EnsureThread(); enabled=!enabled; if(!enabled){streams.HideAll();preview.Hide();} Changed(); }
+        { EnsureThread(); enabled=!enabled; if(!enabled){streams.HideAll();preview.Hide();HideCovers();} Changed(); }
         internal void TogglePreview()
         { EnsureThread(); previewRequested=!previewRequested; if(!previewRequested){preview.Hide();streams.HideAll();} Changed(); }
         public void AddAnchorToCurrentSlide() => AddAnchorToCurrentSlide(new DeviceProfile{Id="legacy",Name="Tablet"});
@@ -209,13 +212,19 @@ namespace AndroidLive
             } finally {Release(tags);}
         }
         private void OnShowChanged(PowerPoint.SlideShowWindow show)
-        { streams.HideAll();preview.Hide();resumeAfter=DateTime.UtcNow.AddMilliseconds(250);transitionPending=true; }
+        {
+            streams.HideAll();preview.Hide();HideCovers();frameWaiting.Reset();
+            resumeAfter=DateTime.UtcNow.AddMilliseconds(250);transitionPending=true;
+            // Cover the frame at event time too; do not wait for video startup or the next timer.
+            // The timer re-reads View.Slide, including backward/custom-show navigation.
+            try { Align(); } catch { HideAndDetach(); }
+        }
         private void OnShowEnd(PowerPoint.Presentation presentation)
-        { HideAndDetach();previewRequested=false;alignment="Slideshow afsluttet; billeder skjult."; }
+        { HideAndDetach();ClearCovers();previewRequested=false;alignment="Slideshow afsluttet; billeder skjult."; }
         private void OnPresentationClose(PowerPoint.Presentation presentation)
-        { HideAndDetach();previewRequested=false; }
+        { HideAndDetach();ClearCovers();previewRequested=false; }
         private void HideAndDetach()
-        { preview.Hide();foreach(var item in streams.All){item.Value.Hide();NativeWindow.DetachOwner(item.Value.Window);} }
+        { HideCovers();preview.Hide();foreach(var item in streams.All){item.Value.Hide();NativeWindow.DetachOwner(item.Value.Window);} }
         private void OnTick(object sender,EventArgs args)
         {
             if(disposed)return;
@@ -241,35 +250,49 @@ namespace AndroidLive
                 if(!NativeWindow.Place(session.Window,preview.Handle,preview.VideoBounds))session.Hide();
             alignment="Forhåndsvisning. Under slideshow vises hver tablet i sin ramme.";
         }
+        private void HideCovers()
+        { foreach(var cover in covers.Values)cover.Conceal(); }
+        private void ClearCovers()
+        {
+            foreach(var cover in covers.Values)cover.Dispose();
+            covers.Clear();frameWaiting.Reset();
+        }
+        internal IntPtr WaitingHandle(string id) => covers.TryGetValue(id,out var cover)?cover.Handle:IntPtr.Zero;
         private void Align()
         {
-            if(!enabled || DateTime.UtcNow<resumeAfter){streams.HideAll();preview.Hide();return;}
+            if(!enabled){streams.HideAll();preview.Hide();HideCovers();return;}
             PowerPoint.SlideShowWindows shows=null;PowerPoint.SlideShowWindow show=null;PowerPoint.SlideShowView view=null;
             PowerPoint.Slide slide=null;PowerPoint.Shapes shapes=null;PowerPoint.Presentation presentation=null;PowerPoint.PageSetup page=null;
             var markers=new Dictionary<string,PowerPoint.Shape>();
             var duplicate=new HashSet<string>();
+            var usedCovers=new HashSet<string>();
+            var placedVideos=new HashSet<string>();
+            bool inShow=false;
             try
             {
                 shows=app.SlideShowWindows;
-                if(shows.Count==0){AlignPreview();return;}
-                preview.Hide();
-                if(shows.Count!=1){streams.HideAll();alignment="Flere slideshows åbne; kør ét ad gangen.";return;}
+                if(shows.Count==0){ClearCovers();AlignPreview();return;}
+                inShow=true;preview.Hide();
+                if(shows.Count!=1){streams.HideAll();HideCovers();alignment="Flere slideshows åbne; kør ét ad gangen.";return;}
                 show=shows[1];var hwnd=new IntPtr(show.HWND);view=show.View;
                 bool normal=view.State==PowerPoint.PpSlideShowState.ppSlideShowRunning;
                 bool visible=NativeWindow.IsWindowVisible(hwnd)&&!NativeWindow.IsIconic(hwnd);
                 bool foreground=NativeWindow.IsHostForeground(hwnd);
-                if(!normal||!visible||!foreground){streams.HideAll();alignment="Billeder skjult: slideshow blankt, pauset eller i baggrunden.";return;}
+                if(!normal||!visible||!foreground){streams.HideAll();HideCovers();alignment="Billeder skjult: slideshow blankt, pauset eller i baggrunden.";return;}
                 slide=view.Slide;
-                if(transitionPending)
+                // Retain transition delay for the live window, but never delay its blank cover.
+                if(transitionPending && DateTime.UtcNow>=resumeAfter)
                 {
                     PowerPoint.SlideShowTransition transition=null;
                     try {
                         transition=slide.SlideShowTransition;
                         double duration=transition.EntryEffect==PowerPoint.PpEntryEffect.ppEffectNone?0:transition.Duration;
                         resumeAfter=DateTime.UtcNow.AddSeconds(Math.Max(0,Math.Min(60,duration)));
-                        transitionPending=false;streams.HideAll();return;
+                        transitionPending=false;
                     } finally {Release(transition);}
                 }
+                bool videoAllowed=!transitionPending && DateTime.UtcNow>=resumeAfter;
+                string slideKey=hwnd.ToInt64()+":"+slide.SlideID;
                 shapes=slide.Shapes;
                 for(int i=1;i<=shapes.Count;i++)
                 {
@@ -282,29 +305,53 @@ namespace AndroidLive
                 using(new NativeWindow.DpiScope())
                 {
                     Rectangle client;
-                    if(!NativeWindow.TryGetClient(hwnd,out client)){streams.HideAll();return;}
-                    foreach(var item in streams.All)
+                    if(!NativeWindow.TryGetClient(hwnd,out client)){streams.HideAll();HideCovers();return;}
+                    // Iterate frames, not streams: a saved/offline tablet may have no process yet.
+                    foreach(var item in markers)
                     {
-                        var session=item.Value;PowerPoint.Shape anchor;
-                        bool valid=markers.TryGetValue(item.Key,out anchor)&&!duplicate.Contains(item.Key)&&
-                            anchor.Visible==Office.MsoTriState.msoTrue && Math.Abs(anchor.Rotation)<.01 &&
-                            anchor.Type==Office.MsoShapeType.msoAutoShape && anchor.AutoShapeType==Office.MsoAutoShapeType.msoShapeRectangle;
+                        var anchor=item.Value;
+                        bool valid=!duplicate.Contains(item.Key) && anchor.Visible==Office.MsoTriState.msoTrue &&
+                            Math.Abs(anchor.Rotation)<.01 && anchor.Type==Office.MsoShapeType.msoAutoShape &&
+                            anchor.AutoShapeType==Office.MsoAutoShapeType.msoShapeRectangle;
                         Rectangle bounds;
-                        if(!OverlayPolicy.ShouldShow(session.Status.State==DeviceState.Running,enabled,true,normal,visible,foreground,valid) ||
-                            !OverlayGeometry.TryMap(client,page.SlideWidth,page.SlideHeight,anchor.Left,anchor.Top,anchor.Width,anchor.Height,out bounds) ||
-                            !NativeWindow.Place(session.Window,hwnd,bounds))
-                        {session.Hide();continue;}
-                        shown++;
+                        if(!valid || !OverlayGeometry.TryMap(client,page.SlideWidth,page.SlideHeight,
+                            anchor.Left,anchor.Top,anchor.Width,anchor.Height,out bounds))continue;
+                        var session=streams.Get(item.Key);
+                        bool ready=videoAllowed && session?.Status.State==DeviceState.Running &&
+                            NativeWindow.Place(session.Window,hwnd,bounds);
+                        var display=frameWaiting.Update(slideKey,item.Key,ready,frameClock.Elapsed);
+                        if(ready){placedVideos.Add(item.Key);shown++;continue;}
+                        session?.Hide();
+                        if(!covers.TryGetValue(item.Key,out var cover)){
+                            cover=new WaitingWindow();covers.Add(item.Key,cover);
+                        }
+                        string label=names.TryGetValue(item.Key,out var known)?known:FrameLabel(anchor);
+                        if(cover.Place(hwnd,bounds,display==FrameDisplay.Waiting,label))usedCovers.Add(item.Key);
                     }
                 }
                 alignment=shown>0?"Overlay visible: "+shown+" livebillede(r). Eksterne vinduer; ikke indlejret video.":
-                    "Ingen aktiv tablet med én gyldig ramme på denne slide. Forbind tabletten og indsæt dens ramme.";
+                    "Venter på livebillede. Ventetekst og ikon vises først efter 15 sekunder.";
                 if(duplicate.Count>0)alignment+=" Dublerede rammer for samme tablet skjules.";
             }
             finally {
+                foreach(var item in covers.ToArray()) {
+                    if(!usedCovers.Contains(item.Key))item.Value.Conceal();
+                    if(!markers.ContainsKey(item.Key)){item.Value.Dispose();covers.Remove(item.Key);}
+                }
+                // Preview manages its own visibility outside a slideshow.
+                if(inShow)
+                    foreach(var item in streams.All)if(!placedVideos.Contains(item.Key))item.Value.Hide();
                 foreach(var shape in markers.Values)Release(shape);
                 Release(page);Release(presentation);Release(shapes);Release(slide);Release(view);Release(show);Release(shows);
             }
+        }
+        private static string FrameLabel(PowerPoint.Shape shape)
+        {
+            // Frames for a removed/unavailable profile still carry a human-readable saved label.
+            string alt=shape.AlternativeText??"", prefix="Live tablet: ", suffix=". Eksternt vindue;";
+            int end=alt.IndexOf(suffix,StringComparison.Ordinal);
+            return alt.StartsWith(prefix,StringComparison.Ordinal)&&end>prefix.Length
+                ? DeviceDiscovery.Clean(alt.Substring(prefix.Length,end-prefix.Length),140) : "denne enhed";
         }
         private sealed class WindowOwner : IWin32Window
         { public IntPtr Handle {get;} internal WindowOwner(IntPtr handle){Handle=handle;} }
@@ -318,7 +365,7 @@ namespace AndroidLive
         public void Dispose()
         {
             if(disposed)return;EnsureThread();StopDevice();disposed=true;
-            timer.Stop();timer.Tick-=OnTick;timer.Dispose();preview.Dispose();uiContext.Dispose();
+            timer.Stop();timer.Tick-=OnTick;timer.Dispose();preview.Dispose();ClearCovers();uiContext.Dispose();
             app.SlideShowBegin-=OnShowChanged;app.SlideShowNextSlide-=OnShowChanged;
             app.SlideShowEnd-=OnShowEnd;app.PresentationClose-=OnPresentationClose;
         }
