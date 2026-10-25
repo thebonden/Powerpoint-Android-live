@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="OnLoad">
   <ribbon><tabs><tab id="AndroidLiveTab" label="Android Live">
-    <group id="Devices" label="Tablets · 0.0.109">
+    <group id="Devices" label="Tablets · 0.0.110">
       <dropDown id="DeviceList" label="Tablet" getItemCount="GetDeviceCount" getItemLabel="GetDeviceLabel" getItemID="GetDeviceId" getSelectedItemIndex="GetDeviceIndex" onAction="OnDeviceSelected" getEnabled="GetEnabled" sizeString="Tablet001 — Mit navn til undervisning" supertip="Viser Android-enhedens navn efterfulgt af dit eget navn, hvis du har valgt et." />
       <editBox id="DeviceName" label="Dit navn" getText="GetDeviceName" onChange="OnDeviceName" getEnabled="GetEnabled" maxLength="60" sizeString="Mit navn til undervisning" supertip="Skriv dit eget navn til den valgte enhed, og tryk Enter. Navnet gemmes også uden forbindelse. Eksisterende slides beholder samme enhed." />
       <button id="RenameDevice" label="Ændr navn…" onAction="OnRename" getEnabled="GetEnabled" supertip="Ret dit eget navn, eller vælg at følge Android-navnet igen. Slide-tilknytninger bevares." />

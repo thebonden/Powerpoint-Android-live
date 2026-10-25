@@ -181,6 +181,7 @@ internal static class Program
         CompatibilityTests.Run(Test);
         DeviceDiscoveryTests.Run(Test);
         ConnectionRecoveryTests.Run(Test);
+        OfficeUiContextTests.Run(Test);
         Test("QR helper resolves outside the actual CLR shadow-copy folder", ShadowCopyProbe.Test);
         Console.WriteLine("Tests: " + passed + " passed, " + failed + " failed.");
         return failed == 0 ? 0 : 1;

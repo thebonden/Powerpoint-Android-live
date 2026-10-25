@@ -16,11 +16,12 @@ namespace AndroidLive
     /// <summary>Independent external windows per device; all Office access stays on the STA.</summary>
     public sealed class LiveAndroidController : IDisposable
     {
-        public const string Version = "0.0.109";
+        public const string Version = "0.0.110";
         public const string AnchorName = SlideIdentity.Name;
         private const string DeviceTag = SlideIdentity.Tag;
         private readonly PowerPoint.Application app;
         private readonly DeviceStreams streams = new DeviceStreams();
+        private readonly OfficeUiContext uiContext = new OfficeUiContext();
         private readonly ConnectionRecovery recovery = new ConnectionRecovery();
         private readonly Dictionary<string,string> notices = new Dictionary<string,string>();
         private string persistenceWarning="";
@@ -50,7 +51,6 @@ namespace AndroidLive
         public LiveAndroidController(PowerPoint.Application application)
         {
             app = application ?? throw new ArgumentNullException(nameof(application));
-            if(SynchronizationContext.Current==null)SynchronizationContext.SetSynchronizationContext(new WindowsFormsSynchronizationContext());
             app.SlideShowBegin += OnShowChanged;
             app.SlideShowNextSlide += OnShowChanged;
             app.SlideShowEnd += OnShowEnd;
@@ -69,7 +69,10 @@ namespace AndroidLive
             EnsureThread(); if(profile==null)return;
             selectedId=profile.Id; names[profile.Id]=profile.Name; Changed();
         }
-        internal async Task StartDeviceAsync(string executable, DeviceProfile profile, bool showPreview = true, Action persist = null)
+        internal Task RunOnUiAsync(Func<Task> action){EnsureThread();return uiContext.RunAsync(action);}
+        internal Task StartDeviceAsync(string executable, DeviceProfile profile, bool showPreview = true, Action persist = null)
+        {return RunOnUiAsync(()=>StartDeviceCoreAsync(executable,profile,showPreview,persist));}
+        private async Task StartDeviceCoreAsync(string executable, DeviceProfile profile, bool showPreview, Action persist)
         {
             EnsureThread();StopDevice(profile.Id);
             var cancel=new CancellationTokenSource();pending[profile.Id]=cancel;
@@ -217,7 +220,7 @@ namespace AndroidLive
         {
             if(disposed)return;
             string previous=Status;
-            try {foreach(var item in streams.All)item.Value.Poll();_ = recovery.TickAsync();Align();}
+            try {foreach(var item in streams.All)item.Value.Poll();_ = RunOnUiAsync(recovery.TickAsync);Align();}
             catch(COMException){HideAndDetach();alignment="PowerPoint er optaget; billeder skjult.";}
             catch(InvalidComObjectException){HideAndDetach();alignment="PowerPoint-vinduet er lukket.";}
             catch(Exception ex){HideAndDetach();alignment="Billeder skjult: "+ex.Message;}
@@ -315,7 +318,7 @@ namespace AndroidLive
         public void Dispose()
         {
             if(disposed)return;EnsureThread();StopDevice();disposed=true;
-            timer.Stop();timer.Tick-=OnTick;timer.Dispose();preview.Dispose();
+            timer.Stop();timer.Tick-=OnTick;timer.Dispose();preview.Dispose();uiContext.Dispose();
             app.SlideShowBegin-=OnShowChanged;app.SlideShowNextSlide-=OnShowChanged;
             app.SlideShowEnd-=OnShowEnd;app.PresentationClose-=OnPresentationClose;
         }

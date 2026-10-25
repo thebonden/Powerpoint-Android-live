@@ -1,4 +1,14 @@
-# Validation — development version 0.0.109
+# Validation — development version 0.0.110
+
+## Confirmed automatic-start UI thread failure — 2026-10-25
+
+- Installed 0.0.109 had a saved endpoint/identity and an authenticated ADB connection, but no scrcpy process. The PowerPoint Status dialog reported “Call the controller on PowerPoint's UI thread” while automatic recovery retried.
+- Clicking the installed **Forbind valgt** restored a visible real-tablet preview without QR. This confirms the observed failure was in automatic startup, not lost pairing. The normal connection action persisted its refreshed connection settings; no manual settings/registration edit or presentation save was performed.
+- Replace reliance on the ambient Office context with an owned STA dispatch window used at every asynchronous timer/manual/ribbon entry.
+- Real message-pump tests exercise null and generic replacement synchronization contexts, nested awaits/cancellation, caller-context restoration and disposal while a continuation is outstanding.
+- Local Release/package validation: **76 managed groups and 14 installer groups**, native QR tests and actual EXE payload/CLI verification.
+- Installed automatic startup/recovery with 0.0.110 remains pending; the agent did not install the update. The real preview check was on the user's installed 0.0.109.
+- No device addresses, identifiers or screenshot contents are committed. Nine-hour physical Wi-Fi endurance and Presenter View acceptance remain pending.
 
 ## Restart, idle recovery and teaching-day simulation — 2026-10-25
 

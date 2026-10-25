@@ -180,17 +180,17 @@ namespace AndroidLive
             catch(Exception ex){MessageBox.Show(ex.Message,"Android Live",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
             finally{Refresh();}
         }
-        private async void RunAsync(Func<Task> action)
+        private void RunAsync(Func<Task> action)
         {
             if(busy||addIn.Controller==null)return;
-            // Office ribbon callbacks do not guarantee a synchronization context.
-            if(SynchronizationContext.Current==null)SynchronizationContext.SetSynchronizationContext(new WindowsFormsSynchronizationContext());
-            busy=true;Refresh();
-            try{await action();}
-            catch(OperationCanceledException){}
-            catch(ObjectDisposedException) when(addIn.Controller==null){}
-            catch(Exception ex){MessageBox.Show(ex.Message,"Android Live",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
-            finally{busy=false;Refresh();}
+            _ = addIn.Controller.RunOnUiAsync(async()=>{
+                busy=true;Refresh();
+                try{await action();}
+                catch(OperationCanceledException){}
+                catch(ObjectDisposedException) when(addIn.Controller==null){}
+                catch(Exception ex){MessageBox.Show(ex.Message,"Android Live",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
+                finally{busy=false;Refresh();}
+            });
         }
     }
 }

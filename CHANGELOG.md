@@ -1,5 +1,13 @@
 # Changes
 
+## 0.0.110 — 2026-10-25 (development)
+
+- Fix automatic startup/recovery failing with “Call the controller on PowerPoint's UI thread” despite an authenticated tablet connection.
+- Establish a dedicated STA dispatch context at each timer, manual-start and async ribbon entry; do not depend on Office retaining a startup synchronization context.
+- Restore the caller's context after entry, preserve the UI context across nested awaits and keep the dispatch window alive until in-flight operations finish during disposal.
+- Add actual message-pump tests for missing/replaced Office callback contexts, nested cancellation and shutdown.
+- Confirm the installed 0.0.109 manual Forbind valgt workaround restored the user's live preview without QR; new automatic startup awaits installed acceptance.
+
 ## 0.0.109 — 2026-10-25 (development)
 
 - Automatically resume saved, identified tablets on PowerPoint startup, without opening QR or preview windows.
