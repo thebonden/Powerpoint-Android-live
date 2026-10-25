@@ -65,6 +65,26 @@ internal static class MultiDeviceTests
             Check(copy.Devices.Count==2&&copy.Selected.Id=="b"&&!copy.Selected.Audio&&copy.Selected.ShowTouches);
             Check(copy.Devices[0].Audio&&copy.Devices[0].Name=="Tablet Æ"&&copy.Devices[0].Orientation==VideoOrientation.Landscape);
         });
+        test("recovery restarts an exited real child while another stream keeps its window",()=>{
+            string exe=typeof(MultiDeviceTests).Assembly.Location;var now=DateTime.UtcNow;int restarted=0;
+            using(var streams=new DeviceStreams())
+            using(var recovery=new ConnectionRecovery(()=>now)){
+                var first=streams.Start("a",exe,"test-a",false,false,null);
+                var second=streams.Start("b",exe,"test-b",false,false,null);
+                Await(()=>{first.Poll();second.Poll();return first.Status.State==DeviceState.Running&&second.Status.State==DeviceState.Running;});
+                IntPtr secondWindow=second.Window;
+                recovery.Track("a",()=>first.Status.State,c=>{
+                    c.ThrowIfCancellationRequested();streams.Start("a",exe,"test-a",false,false,null);restarted++;
+                    return System.Threading.Tasks.Task.CompletedTask;
+                },c=>System.Threading.Tasks.Task.FromResult(true),()=>streams.Stop("a"),false);
+                NativeWindow.Close(first.Window);
+                Await(()=>{first.Poll();return first.Status.State==DeviceState.Faulted;});
+                recovery.TickAsync().GetAwaiter().GetResult();now=now.AddSeconds(2);
+                recovery.TickAsync().GetAwaiter().GetResult();
+                Await(()=>{first.Poll();second.Poll();return first.Status.State==DeviceState.Running;});
+                Check(restarted==1&&second.Status.State==DeviceState.Running&&second.Window==secondWindow);
+            }
+        });
         test("two live processes remain independent across stop, restart, failure and removal",()=>{
             string exe=typeof(MultiDeviceTests).Assembly.Location;
             using(var streams=new DeviceStreams()){

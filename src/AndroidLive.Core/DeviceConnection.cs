@@ -53,6 +53,13 @@ namespace AndroidLive.Core
             cancel.ThrowIfCancellationRequested();
             return new DeviceConnection{Endpoint=endpoint,Name=name,Serial=serial};
         }
+        internal async Task<bool> ProbeAsync(DeviceProfile device,CancellationToken cancel)
+        {
+            if(!WifiEndpoint.IsValid(device.Endpoint)||string.IsNullOrEmpty(device.HardwareSerial))return false;
+            string serial=Clean(await Read("-s "+device.Endpoint+" shell getprop ro.serialno",cancel).ConfigureAwait(false),128);
+            cancel.ThrowIfCancellationRequested();
+            return serial==device.HardwareSerial;
+        }
         internal static IEnumerable<string> ParseServices(string output)
         {
             return (output??"").Split('\n').Select(line=>line.Trim().Split((char[])null,StringSplitOptions.RemoveEmptyEntries))
@@ -87,7 +94,7 @@ namespace AndroidLive.Core
                 catch(OperationCanceledException) when(!cancel.IsCancellationRequested) { }
             }
             cancel.ThrowIfCancellationRequested();
-            throw new InvalidOperationException("Tabletten blev ikke fundet. Tænd Trådløs fejlfinding og brug samme Wi-Fi. Vælg derefter Opdater valgt / QR, eller indtast den aktuelle forbindelsesadresse. Dine slides bevares.");
+            throw new InvalidOperationException("Tabletten blev ikke fundet. Tænd Trådløs fejlfinding og brug samme Wi-Fi. Prøv Forbind valgt igen. Brug kun Opdater valgt / QR, hvis parringen mangler, eller adressen skal opdateres manuelt. Dine slides bevares.");
         }
     }
 }

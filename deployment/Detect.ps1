@@ -28,7 +28,7 @@ try {
  $reader=[Xml.XmlReader]::Create($expected,$settings)
  try{$document=[Xml.XmlDocument]::new();$document.XmlResolver=$null;$document.Load($reader)}finally{$reader.Dispose()}
  $node=$document.SelectSingleNode('/*[local-name()="assembly"]/*[local-name()="assemblyIdentity"]')
- if(!$node -or [version]$node.version -lt [version]'0.0.108.0'){exit 1}
+ if(!$node -or [version]$node.version -lt [version]'0.0.109.0'){exit 1}
  Write-Output ('Android Live '+$node.version)
  exit 0
 }catch{exit 1}

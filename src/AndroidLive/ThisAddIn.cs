@@ -13,7 +13,8 @@ namespace AndroidLive
         {
             Controller = new LiveAndroidController(Application);
             Controller.StatusChanged += OnStatusChanged;
-            ribbon?.Refresh();
+            if(ribbon==null)ribbon=new AndroidRibbon(this);
+            ribbon.RestoreConnections();ribbon.Refresh();
         }
         private void OnStatusChanged(object sender, EventArgs e) { ribbon?.Refresh(); }
         private void ThisAddIn_Shutdown(object sender, EventArgs e)

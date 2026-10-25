@@ -1,4 +1,18 @@
-# Validation — development version 0.0.108
+# Validation — development version 0.0.109
+
+## Restart, idle recovery and teaching-day simulation — 2026-10-25
+
+- User clarified failures after closing/reopening PowerPoint or leaving it idle, with one hour of preparation followed by eight hours of teaching.
+- Code inspection found no startup resume or automatic retry after session faults. Added per-device recovery, preserving the existing identity-matched discovery and readiness guard.
+- Release/package validation: 73 managed groups and 14 installer groups, native QR checks and actual EXE payload/CLI verification.
+- New coordinator tests cover initially offline startup, retry spacing, reset only after 60 seconds of stable video, two failed probes, one transient miss, cancellation during retry/probe, and stale completion after replacement.
+- Preference XML tests cover legacy defaults and explicit Stop persistence. Probe tests verify the exact target/identity and absence of pairing/disconnect commands.
+- Two actual simulated child processes verify automatic restart after one process exits while the other retains the same running window.
+- A virtual clock advances nine hours, with eight one-minute outages and successful recovery each time; monitoring continues through long idle intervals. This is not physical Wi-Fi/Android endurance evidence.
+- Child SDL activation behavior follows [SDL3](https://wiki.libsdl.org/SDL3/SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN) and [SDL2](https://wiki.libsdl.org/SDL2/SDL_HINT_WINDOW_NO_ACTIVATION_WHEN_SHOWN) hints. Installed PowerPoint focus and foreground behavior require hardware acceptance.
+- Pairing versus connection follows the [Android ADB guide](https://developer.android.com/tools/adb#wireless). The add-in does not reset shared ADB, repair authorization, override power settings or launch QR automatically.
+- Required installed acceptance: reopen PowerPoint, verify startup resumes; interrupt Wi-Fi then restore it; leave a slideshow idle and on slides without frames; verify focus, selection and audio options; Stop then reopen and confirm it remains stopped; run one hour setup plus eight hours teaching with breaks on the target network.
+- No real PowerPoint presentation, device authorization, saved user settings or installed Office registration was changed by the agent. ADB liveness cannot detect every frozen app/decoder while the transport remains responsive.
 
 ## Frame captions with both names — 2026-10-24
 

@@ -23,6 +23,11 @@ namespace AndroidLive
             using(var stream=typeof(AndroidRibbon).Assembly.GetManifestResourceStream("AndroidLive.AndroidRibbon.xml"))
             using(var reader=new StreamReader(stream))return reader.ReadToEnd();
         }
+        internal void RestoreConnections()
+        {
+            foreach(var profile in settings.Devices)addIn.Controller.ResumeDevice(settings.ScrcpyPath,profile,settings.Save);
+            addIn.Controller.SelectDevice(settings.Selected);
+        }
         public void OnLoad(Office.IRibbonUI ui){ribbon=ui;}
         internal void Refresh(){try{ribbon?.Invalidate();}catch(COMException){}}
         public bool GetEnabled(Office.IRibbonControl control)
@@ -73,7 +78,7 @@ namespace AndroidLive
                 var device=settings.Selected;if(device==null)return;
                 bool restart=addIn.Controller.IsDeviceActive(device.Id);
                 change(device);settings.Save();
-                if(restart)await addIn.Controller.StartDeviceAsync(settings.ScrcpyPath,device,false);
+                if(restart)await addIn.Controller.StartDeviceAsync(settings.ScrcpyPath,device,false,settings.Save);
                 settings.Save();
             });
         }
@@ -81,7 +86,14 @@ namespace AndroidLive
         {Run(()=>{if(settings.Selected!=null)addIn.Controller.AddAnchorToCurrentSlide(settings.Selected);});}
         public void OnAddTablet(Office.IRibbonControl control){OpenWifi(false,true);}
         public void OnConnectWifi(Office.IRibbonControl control){OpenWifi(false,false);}
-        public void OnStart(Office.IRibbonControl control){OpenWifi(true,false);}
+        public void OnStart(Office.IRibbonControl control)
+        {
+            RunAsync(async()=>{
+                if(settings.Selected==null||!EnsureScrcpy())return;
+                await addIn.Controller.StartDeviceAsync(settings.ScrcpyPath,settings.Selected,true,settings.Save);
+                settings.Save();
+            });
+        }
         private bool EnsureScrcpy()
         {
             if(ScrcpyLocator.IsComplete(settings.ScrcpyPath))return true;
@@ -93,12 +105,13 @@ namespace AndroidLive
             RunAsync(async()=>{
                 if(!EnsureScrcpy())return;
                 var device=newDevice?null:settings.Selected;
+                if(device!=null)addIn.Controller.StopDevice(device.Id);
                 DeviceConnection connection;
                 using(var dialog=new WifiDialog(settings.ScrcpyPath,device?.Endpoint??"",reconnect,device)){
                     if(dialog.ShowDialog()!=DialogResult.OK)return;connection=dialog.Connection;
                 }
                 device=settings.AcceptConnection(device,connection);settings.Save();
-                await addIn.Controller.StartDeviceAsync(settings.ScrcpyPath,device);settings.Save();
+                await addIn.Controller.StartDeviceAsync(settings.ScrcpyPath,device,true,settings.Save);settings.Save();
             });
         }
         public void OnStartAll(Office.IRibbonControl control)
@@ -108,7 +121,7 @@ namespace AndroidLive
                 var errors=new System.Collections.Generic.List<string>();
                 foreach(var device in settings.Devices.ToArray()){
                     if(addIn.Controller.IsDeviceActive(device.Id))continue;
-                    try{await addIn.Controller.StartDeviceAsync(settings.ScrcpyPath,device);settings.Save();}
+                    try{await addIn.Controller.StartDeviceAsync(settings.ScrcpyPath,device,true,settings.Save);settings.Save();}
                     catch(OperationCanceledException){break;}
                     catch(Exception ex){errors.Add(device.Name+": "+ex.Message);}
                 }
@@ -116,8 +129,24 @@ namespace AndroidLive
                 if(errors.Count>0)MessageBox.Show(string.Join("\n\n",errors),"Tabletter der ikke kunne forbindes");
             });
         }
-        public void OnStop(Office.IRibbonControl control){Run(()=>addIn.Controller.StopDevice(settings.SelectedDeviceId));}
-        public void OnStopAll(Office.IRibbonControl control){Run(()=>addIn.Controller.StopDevice());}
+        public void OnStop(Office.IRibbonControl control)
+        {
+            Run(()=>{
+                var device=settings.Selected;if(device==null)return;
+                bool previous=device.ReconnectOnStartup;device.ReconnectOnStartup=false;
+                try{settings.Save();}catch{device.ReconnectOnStartup=previous;throw;}
+                addIn.Controller.StopDevice(device.Id);
+            });
+        }
+        public void OnStopAll(Office.IRibbonControl control)
+        {
+            Run(()=>{
+                var previous=settings.Devices.Select(d=>d.ReconnectOnStartup).ToArray();
+                foreach(var device in settings.Devices)device.ReconnectOnStartup=false;
+                try{settings.Save();}catch{for(int i=0;i<previous.Length;i++)settings.Devices[i].ReconnectOnStartup=previous[i];throw;}
+                addIn.Controller.StopDevice();
+            });
+        }
         public void OnToggle(Office.IRibbonControl control,bool pressed){Run(()=>addIn.Controller.ToggleOverlay());}
         public void OnPreview(Office.IRibbonControl control,bool pressed)
         {Run(()=>{addIn.Controller.SelectDevice(settings.Selected);addIn.Controller.TogglePreview();});}

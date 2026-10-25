@@ -125,9 +125,9 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <PropertyGroup>
-    <FriendlyName>Android Live 0.0.108</FriendlyName>
+    <FriendlyName>Android Live 0.0.109</FriendlyName>
     <Description>Android live window overlay for PowerPoint</Description>
-    <ApplicationVersion>0.0.108.0</ApplicationVersion>
+    <ApplicationVersion>0.0.109.0</ApplicationVersion>
     <GenerateManifests>true</GenerateManifests>
     <LangVersion>7.3</LangVersion>
     <SignManifests>true</SignManifests>
@@ -164,7 +164,7 @@
     <Compile Include="..\AndroidLive.Core\OverlayGeometry.cs" />
     <Compile Include="..\AndroidLive.Core\OverlayPolicy.cs" />
     <Compile Include="..\AndroidLive.Core\ScrcpyArguments.cs" />
-    <Compile Include="..\AndroidLive.Core\SessionState.cs" />
+    <Compile Include="..\AndroidLive.Core\SessionState.cs" /><Compile Include="..\AndroidLive.Core\ConnectionRecovery.cs" />
     <EmbeddedResource Include="AndroidRibbon.xml" />
     <None Include="ThisAddIn.Designer.xml" />
   </ItemGroup>

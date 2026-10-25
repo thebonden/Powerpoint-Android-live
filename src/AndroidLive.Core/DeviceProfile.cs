@@ -57,6 +57,7 @@ namespace AndroidLive.Core
         }
         public string Endpoint { get; set; } = "";
         public string HardwareSerial { get; set; } = "";
+        public bool ReconnectOnStartup { get; set; } = true;
         public bool Audio { get; set; }
         public bool ShowTouches { get; set; }
         public VideoOrientation Orientation { get; set; }

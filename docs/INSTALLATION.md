@@ -1,9 +1,9 @@
-# Nem installation · Android Live 0.0.108
+# Nem installation · Android Live 0.0.109
 
-Del **Android-Live-0.0.108-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
+Del **Android-Live-0.0.109-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
 
 1. Gem præsentationen, og luk PowerPoint.
-2. Dobbeltklik på **Android-Live-0.0.108-Setup.exe**.
+2. Dobbeltklik på **Android-Live-0.0.109-Setup.exe**.
 3. Klik **Installer / opdater**, og følg eventuelle Microsoft-vinduer.
 4. Når installationsprogrammet skriver **Færdig**, start PowerPoint normalt.
 
@@ -32,11 +32,11 @@ Før bred distribution skal en ansvarlig udgiver levere et offentligt signerings
 Den gamle ZIP-pakke er kun til fejlfinding/udvikling. Brug den samlede EXE til almindelige brugere.
 ## På undervisningsdagen
 
-Åbn din gemte PowerPoint på den samme pc/brugerprofil. Tænd Trådløs fejlfinding på tablets, og forbind dem til samme Wi-Fi som pc'en. Tryk **Klargør / forbind alle**.
+Åbn din gemte PowerPoint på den samme pc/brugerprofil. Tænd Trådløs fejlfinding på tablets, og forbind dem til samme Wi-Fi som pc'en. PowerPoint forsøger automatisk at genforbinde de gemte tablets, når deres identitet er kendt. Hvis du tidligere har valgt **Stop**, tryk **Klargør / forbind alle** for at starte dem igen.
 
 Programmet forsøger først den gemte adresse og derefter annoncerede Wi-Fi-enheder, som matcher den kendte enheds identitet. Første gang efter opgradering skal en gammel enhed muligvis opdateres med QR, så identiteten kan læses.
 
-Hvis en enhed ikke bliver fundet: vælg den i **Tablet**, og tryk **Opdater valgt / QR**. Scan en ny QR-kode, eller skriv forbindelsesadressen fra tabletten. Brug denne knap til eksisterende enheder; **Tilføj tablet / QR** er til nye enheder. Egne navne og slide-tilknytninger bevares.
+Hvis en enhed ikke bliver fundet: tjek samme Wi-Fi og Trådløs fejlfinding, vælg den i **Tablet**, og prøv **Forbind valgt**. Knappen åbner ikke QR. Hvis parringen mangler, eller forbindelsesadressen skal opdateres manuelt, brug **Opdater valgt / QR**. Scan en ny QR-kode, eller skriv forbindelsesadressen fra tabletten. Brug denne knap til eksisterende enheder; **Tilføj tablet / QR** er til nye enheder. Egne navne og slide-tilknytninger bevares.
 
 En ny enhed får automatisk sit Android-navn, fx Tablet001; hvis Android ikke oplyser det, bruges modellen eller Tablet 1 osv. Gamle standardnavne som **Tablet 1** bliver også opdateret ved næste forbindelse.
 
@@ -63,9 +63,24 @@ Enhedslisten tilhører pc'ens brugerprofil. Flytning af PPTX til en anden pc ove
 
 Programmet hedder **Android Live**. Organisationsnavnet er fjernet fra produktnavn, nye programfiler, namespaces, certifikatnavn og nye datamapper. Gamle identifikatorer findes kun i kompatibilitetskoden, så tidligere installerede udgaver, gemte tabletindstillinger og eksisterende slides kan migreres. Dine egne tablet-navne ændres ikke.
 
-Der er to leverancer: **Android-Live-0.0.108-Setup.exe** til almindelig installation og **Android-Live-0.0.108-IT.zip** til IT med samme EXE, lydløse kommandoer, detektion og vejledning.
+Der er to leverancer: **Android-Live-0.0.109-Setup.exe** til almindelig installation og **Android-Live-0.0.109-IT.zip** til IT med samme EXE, lydløse kommandoer, detektion og vejledning.
 ## Hele skærmen i rammen
 
 Android Live tilpasser automatisk hele Android-skærmen til tabletrammen og forhåndsvisningen. Billedet bevarer sine proportioner og bliver ikke beskåret eller strakt. Hvis rammen og enheden har forskellige formater, vises sorte kanter over/under eller ved siderne. Du kan frit gøre rammen bredere, smallere, større eller mindre. Tilpasningen følger også enhedens rotation.
 
 Dette ændrer kun visningen på pc'en. Indhold, som Android selv skjuler, fx systembjælker i fuldskærmsapps, vises ikke ved denne tilpasning.
+## En hel undervisningsdag og pauser
+
+Planlæg klargøring og undervisning som ét samlet forløb, fx én times test og otte timers undervisning. Programmet har ingen fast grænse for, hvor længe det forsøger at bevare forbindelserne.
+
+- Åbn PowerPoint med pc og tablet på samme Wi-Fi og Trådløs fejlfinding tændt. Gemte, kendte tablets genforbindes automatisk. Start slideshow eller Forhåndsvisning for at se billedet; opstart åbner ikke forhåndsvisningsvinduer af sig selv.
+- Test alle de enheder og slides, du skal bruge, før undervisningen. Navne, rammer, lyd og orientering bevares ved genforbindelse.
+- Lad forbindelserne være startet i pauser og på slides uden tabletbillede. Programmet kontrollerer dem løbende og genforbinder ved udfald. Det kræver ikke, at du går ud af slideshowet.
+- Sørg for strøm og undgå, at pc'en går i dvale. Androids strømbesparelse, Wi-Fi og Trådløs fejlfinding styres fortsat af enheden; programmet ændrer ikke disse indstillinger.
+- **Stop valgt / Stop alle** standser også automatisk genforbindelse og huskes næste gang PowerPoint åbnes. **Forbind valgt / Klargør / forbind alle** aktiverer det igen.
+- Ved genforbindelse kan billedet være væk en periode. Forsøg har tidsgrænser og stigende pauser. **Status** viser, hvad programmet forsøger, og seneste fejl.
+- Hvis en gammel tablet mangler en gemt identitet, vælg **Forbind valgt** én gang. Programmet vælger ikke en tilfældig tablet som erstatning.
+
+QR-koden skal ikke fornys alene, fordi PowerPoint lukkes. Genforbindelse bruger den eksisterende parring. Hvis Android har fjernet godkendelsen, skal du godkende/parre igen. Se [Androids vejledning om Wi-Fi-forbindelse](https://developer.android.com/tools/adb#wireless).
+
+Ni timers drift er testet med simuleret tid og gentagne udfald i programtests. En rigtig ni timers test med de konkrete tablets, netværk, pauser og strømforhold er stadig nødvendig før heldagsbrug kan regnes som afprøvet.

@@ -30,6 +30,9 @@ namespace AndroidLive
                 WorkingDirectory = Path.GetDirectoryName(executable), UseShellExecute = false,
                 CreateNoWindow = true, RedirectStandardError = true, RedirectStandardOutput = true
             };
+            // Keep automatic video recovery from activating the SDL window over PowerPoint.
+            start.EnvironmentVariables["SDL_WINDOW_ACTIVATE_WHEN_SHOWN"]="0";
+            start.EnvironmentVariables["SDL_WINDOW_NO_ACTIVATION_WHEN_SHOWN"]="1";
             LocalCommand.SetAdbEnvironment(start, Path.Combine(Path.GetDirectoryName(executable), "adb.exe"));
             process = new Process { StartInfo = start };
             process.ErrorDataReceived += Capture;

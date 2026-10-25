@@ -16,11 +16,14 @@ namespace AndroidLive
     /// <summary>Independent external windows per device; all Office access stays on the STA.</summary>
     public sealed class LiveAndroidController : IDisposable
     {
-        public const string Version = "0.0.108";
+        public const string Version = "0.0.109";
         public const string AnchorName = SlideIdentity.Name;
         private const string DeviceTag = SlideIdentity.Tag;
         private readonly PowerPoint.Application app;
         private readonly DeviceStreams streams = new DeviceStreams();
+        private readonly ConnectionRecovery recovery = new ConnectionRecovery();
+        private readonly Dictionary<string,string> notices = new Dictionary<string,string>();
+        private string persistenceWarning="";
         private readonly Dictionary<string, CancellationTokenSource> pending = new Dictionary<string, CancellationTokenSource>();
         private readonly Dictionary<string,string> names = new Dictionary<string,string>();
         private readonly System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer { Interval = 100 };
@@ -32,12 +35,14 @@ namespace AndroidLive
         private bool transitionPending;
         private string alignment = "Forbind en tablet, og indsæt dens ramme på en slide.";
         public event EventHandler StatusChanged;
-        public string Status => string.Join("\n", streams.All.Select(s => Name(s.Key) + ": " + s.Value.Status.Detail)) + "\n" + alignment;
-        public string Diagnostics => string.Join("\n\n", streams.All.Select(s => Name(s.Key) + ":\n" + s.Value.Diagnostics));
-        public bool IsActive => pending.Count != 0 || streams.All.Any(s => Active(s.Value));
+        public string Status => string.Join("\n", names.Keys.Select(id => Name(id)+": "+
+            (recovery.Status(id) ?? (notices.TryGetValue(id,out var notice)?notice:streams.Get(id)?.Status.Detail??"Ikke forbundet."))))+
+            "\n"+alignment+(persistenceWarning.Length==0?"":"\n"+persistenceWarning);
+        public string Diagnostics => string.Join("\n\n", names.Keys.Select(id => Name(id)+":\n"+(streams.Get(id)?.Diagnostics??"")+"\n"+(recovery.LastFailure(id)??"")));
+        public bool IsActive => recovery.Any || pending.Count != 0 || streams.All.Any(s => Active(s.Value));
         public bool OverlayEnabled => enabled;
         public bool PreviewEnabled => previewRequested;
-        internal bool IsDeviceActive(string id) => id != null && (pending.ContainsKey(id) || Active(streams.Get(id)));
+        internal bool IsDeviceActive(string id) => id != null && (recovery.Contains(id) || pending.ContainsKey(id) || Active(streams.Get(id)));
         private static bool Active(ScrcpySession session) => session != null &&
             (session.Status.State == DeviceState.Starting || session.Status.State == DeviceState.Running);
         private string Name(string id) => names.TryGetValue(id,out var name) ? name : id;
@@ -45,6 +50,7 @@ namespace AndroidLive
         public LiveAndroidController(PowerPoint.Application application)
         {
             app = application ?? throw new ArgumentNullException(nameof(application));
+            if(SynchronizationContext.Current==null)SynchronizationContext.SetSynchronizationContext(new WindowsFormsSynchronizationContext());
             app.SlideShowBegin += OnShowChanged;
             app.SlideShowNextSlide += OnShowChanged;
             app.SlideShowEnd += OnShowEnd;
@@ -63,41 +69,67 @@ namespace AndroidLive
             EnsureThread(); if(profile==null)return;
             selectedId=profile.Id; names[profile.Id]=profile.Name; Changed();
         }
-        internal async Task StartDeviceAsync(string executable, DeviceProfile profile, bool showPreview = true)
+        internal async Task StartDeviceAsync(string executable, DeviceProfile profile, bool showPreview = true, Action persist = null)
         {
-            EnsureThread();
-            if (!WifiEndpoint.IsValid(profile.Endpoint)) throw new ArgumentException("Forbind tabletten med QR først.");
-            StopDevice(profile.Id);
-            var cancel = new CancellationTokenSource();
-            pending[profile.Id]=cancel;
-            string id=profile.Id, endpoint=profile.Endpoint;
-            bool audio=profile.Audio, touches=profile.ShowTouches;
-            var orientation=profile.Orientation;
-            names[id]=profile.Name; Changed();
+            EnsureThread();StopDevice(profile.Id);
+            var cancel=new CancellationTokenSource();pending[profile.Id]=cancel;
+            names[profile.Id]=profile.Name;Changed();
             try
             {
-                var connection = await new DeviceDiscovery(Path.Combine(Path.GetDirectoryName(executable),"adb.exe")).ReconnectAsync(profile,cancel.Token);
-                endpoint=connection.Endpoint;
-                profile.Endpoint=endpoint; profile.HardwareSerial=connection.Serial;
-                profile.ApplyAndroidName(connection.Name); names[id]=profile.Name;
-                string capture = await CaptureOrientation.ResolveAsync(Path.Combine(Path.GetDirectoryName(executable),"adb.exe"),
-                    endpoint,orientation,cancel.Token);
-                cancel.Token.ThrowIfCancellationRequested();
-                EnsureThread();
-                streams.Start(id,executable,endpoint,audio,touches,capture);
-                selectedId=id; if(showPreview){enabled=true;previewRequested=true;}
+                await StartStreamAsync(executable,profile,cancel.Token);
+                profile.ReconnectOnStartup=true;
+                WatchDevice(executable,profile,persist,false);
+                selectedId=profile.Id;if(showPreview){enabled=true;previewRequested=true;}
             }
             finally
             {
-                if(pending.TryGetValue(id,out var current) && ReferenceEquals(current,cancel))pending.Remove(id);
-                cancel.Dispose();
-                if(!disposed)Changed();
+                if(pending.TryGetValue(profile.Id,out var current)&&ReferenceEquals(current,cancel))pending.Remove(profile.Id);
+                cancel.Dispose();if(!disposed)Changed();
             }
+        }
+        private async Task StartStreamAsync(string executable,DeviceProfile profile,CancellationToken cancel)
+        {
+            if(!WifiEndpoint.IsValid(profile.Endpoint))throw new ArgumentException("Forbind tabletten med QR først.");
+            var discovery=new DeviceDiscovery(Path.Combine(Path.GetDirectoryName(executable),"adb.exe"));
+            var connection=await discovery.ReconnectAsync(profile,cancel);
+            string capture=await CaptureOrientation.ResolveAsync(Path.Combine(Path.GetDirectoryName(executable),"adb.exe"),
+                connection.Endpoint,profile.Orientation,cancel);
+            cancel.ThrowIfCancellationRequested();EnsureThread();
+            profile.Endpoint=connection.Endpoint;profile.HardwareSerial=connection.Serial;
+            profile.ApplyAndroidName(connection.Name);names[profile.Id]=profile.Name;
+            streams.Start(profile.Id,executable,profile.Endpoint,profile.Audio,profile.ShowTouches,capture);
+            notices.Remove(profile.Id);
+        }
+        internal void ResumeDevice(string executable,DeviceProfile profile,Action persist)
+        {
+            EnsureThread();names[profile.Id]=profile.Name;
+            if(!profile.ReconnectOnStartup)return;
+            if(!ScrcpyLocator.IsComplete(executable)){
+                notices[profile.Id]="Find scrcpy under Indstillinger, og vælg Forbind valgt.";return;
+            }
+            WatchDevice(executable,profile,persist,true);
+        }
+        private void WatchDevice(string executable,DeviceProfile profile,Action persist,bool connectNow)
+        {
+            if(string.IsNullOrEmpty(profile.HardwareSerial)){
+                notices[profile.Id]="Enhedens identitet mangler til automatisk genforbindelse. Brug Forbind valgt én gang.";return;
+            }
+            var discovery=new DeviceDiscovery(Path.Combine(Path.GetDirectoryName(executable),"adb.exe"));
+            recovery.Track(profile.Id,()=>streams.Get(profile.Id)?.Status.State??DeviceState.Stopped,
+                async cancel=>{
+                    await StartStreamAsync(executable,profile,cancel);
+                    try{persist?.Invoke();persistenceWarning="";}
+                    catch(Exception ex){persistenceWarning="Forbundet, men adressen kunne ikke gemmes: "+ex.Message;}
+                    Changed();
+                },
+                cancel=>discovery.ProbeAsync(profile,cancel),
+                ()=>{streams.Stop(profile.Id);if(selectedId==profile.Id)preview.Hide();},connectNow);
         }
         internal void StopDevice(string id)
         {
             EnsureThread();
             if(id==null)return;
+            recovery.Stop(id);notices.Remove(id);
             if(pending.TryGetValue(id,out var cancel)){pending.Remove(id);cancel.Cancel();}
             streams.Stop(id);
             if(selectedId==id)preview.Hide();
@@ -106,13 +138,14 @@ namespace AndroidLive
         internal void RemoveDevice(string id)
         {
             EnsureThread(); if(id==null)return;
-            StopDevice(id); streams.Remove(id); names.Remove(id);
+            StopDevice(id); streams.Remove(id); names.Remove(id);notices.Remove(id);
             if(selectedId==id)selectedId="";
             Changed();
         }
         public void StopDevice()
         {
             EnsureThread();
+            recovery.Dispose();notices.Clear();
             foreach(var cancel in pending.Values.ToArray())cancel.Cancel();
             pending.Clear(); streams.Dispose(); preview.Hide(); previewRequested=false; Changed();
         }
@@ -184,7 +217,7 @@ namespace AndroidLive
         {
             if(disposed)return;
             string previous=Status;
-            try {foreach(var item in streams.All)item.Value.Poll();Align();}
+            try {foreach(var item in streams.All)item.Value.Poll();_ = recovery.TickAsync();Align();}
             catch(COMException){HideAndDetach();alignment="PowerPoint er optaget; billeder skjult.";}
             catch(InvalidComObjectException){HideAndDetach();alignment="PowerPoint-vinduet er lukket.";}
             catch(Exception ex){HideAndDetach();alignment="Billeder skjult: "+ex.Message;}

@@ -1,5 +1,16 @@
 # Changes
 
+## 0.0.109 — 2026-10-25 (development)
+
+- Automatically resume saved, identified tablets on PowerPoint startup, without opening QR or preview windows.
+- Persist explicit Stop preferences; closing PowerPoint alone does not disable the next automatic connection.
+- Monitor tablet identity through bounded ADB probes every 15 seconds; recover after two failures or a lost video process.
+- Retry independently per tablet with bounded discovery and 2/5/10/30-second backoff; cancel stale work on stop, removal and shutdown.
+- Preserve selected tablet, preview/overlay choices, names, options and slide routing during background recovery; save refreshed endpoints.
+- Make Forbind valgt reconnect without opening QR, and retain explicit QR repair for missing pairing.
+- Configure child SDL windows not to activate themselves when shown, preserving the existing initialized-window readiness guard.
+- Add tests for startup, cancellation, liveness, independent process recovery and nine simulated hours with eight outages.
+
 ## 0.0.108 — 2026-10-24 (development)
 
 - Remove the development version from slide frame captions.
