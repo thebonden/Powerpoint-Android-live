@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="OnLoad">
+  <ribbon><tabs><tab id="AndroidLiveTab" label="Android Live">
+    <group id="Identity" label="Android Live"><button id="Brand" label="Android Live" size="large" getImage="GetImage" onAction="OnHelp" getEnabled="GetEnabled" supertip="Åbn hjælp, vejledninger og fejlfinding." /></group>
+    <group id="Devices" label="Tablets · 0.0.113">
+      <dropDown id="DeviceList" label="Tablet" getItemCount="GetDeviceCount" getItemLabel="GetDeviceLabel" getItemID="GetDeviceId" getSelectedItemIndex="GetDeviceIndex" onAction="OnDeviceSelected" getEnabled="GetEnabled" sizeString="Tablet001 — Mit navn til undervisning" supertip="Viser Android-enhedens navn efterfulgt af dit eget navn, hvis du har valgt et." />
+      <editBox id="DeviceName" label="Dit navn" getText="GetDeviceName" onChange="OnDeviceName" getEnabled="GetEnabled" maxLength="60" sizeString="Mit navn til undervisning" supertip="Skriv dit eget navn til den valgte enhed, og tryk Enter. Navnet gemmes også uden forbindelse. Eksisterende slides beholder samme enhed." />
+      <button id="RenameDevice" getImage="GetImage" label="Ændr navn…" onAction="OnRename" getEnabled="GetEnabled" supertip="Ret dit eget navn, eller vælg at følge Android-navnet igen. Slide-tilknytninger bevares." />
+      <button id="AddTablet" getImage="GetImage" label="Tilføj tablet / QR" size="large" onAction="OnAddTablet" getEnabled="GetEnabled" supertip="Par en ekstra tablet. Andre tilsluttede tablets fortsætter." />
+      <button id="ConnectWifi" getImage="GetImage" label="Opdater valgt / QR" onAction="OnConnectWifi" getEnabled="GetEnabled" />
+      <button id="StartAndroid" getImage="GetImage" label="Forbind valgt" supertip="Genforbind den gemte tablet uden at åbne QR. Automatisk genforbindelse og opstart aktiveres igen." onAction="OnStart" getEnabled="GetEnabled" />
+      <button id="StartAll" getImage="GetImage" label="Klargør / forbind alle" onAction="OnStartAll" getEnabled="GetEnabled" />
+      <button id="StopAndroid" getImage="GetImage" label="Stop valgt" supertip="Stop den valgte tablet og dens automatiske genforbindelse, også næste gang PowerPoint åbnes. Forbind valgt starter den igen." onAction="OnStop" getEnabled="GetEnabled" />
+      <button id="RemoveDevice" getImage="GetImage" label="Fjern fra listen" onAction="OnRemoveDevice" getEnabled="GetEnabled" supertip="Fjern den valgte enhed fra listen og stop dens livebillede. Slides og rammer bevares." />
+      <button id="StopAll" getImage="GetImage" label="Stop alle" supertip="Stop alle tablets og automatisk genforbindelse, også efter genstart. Klargør / forbind alle starter dem igen." onAction="OnStopAll" getEnabled="GetEnabled" />
+    </group>
+    <group id="SlideFeed" label="Billede på slide">
+      <button id="AddMarker" getImage="GetImage" label="Indsæt / opdater ramme" size="large" onAction="OnAddMarker" getEnabled="GetEnabled" supertip="Indsæt valgt tablets ramme på denne slide, eller opdater navnene i dens eksisterende ramme. Rammeteksten viser begge navne uden versionsnummer. Gentag med en anden tablet for at vise flere samtidig. Flyt og tilpas rammerne. Hele enhedens skærm vises uden beskæring; sorte kanter udfylder forskelle i format." />
+      <toggleButton id="Preview" getImage="GetImage" label="Forhåndsvisning" supertip="Vis hele enhedens skærm uden beskæring. Billedet tilpasses vinduet med bevarede proportioner." onAction="OnPreview" getPressed="GetPressed" getEnabled="GetEnabled" />
+      <toggleButton id="ShowOverlay" getImage="GetImage" label="Vis livebilleder" onAction="OnToggle" getPressed="GetPressed" getEnabled="GetEnabled" />
+    </group>
+    <group id="DeviceOptions" label="Valgt tablets indstillinger">
+      <toggleButton id="Audio" getImage="GetImage" label="Lyd" onAction="OnAudio" getPressed="GetPressed" getEnabled="GetEnabled" supertip="Afspil tablettens lyd på pc'en. Genstarter kort den valgte forbindelse. Lyden fortsætter også, når billedet er skjult; slå Lyd fra eller stop tabletten for at standse den." />
+      <toggleButton id="Touches" getImage="GetImage" label="Vis fingertryk" onAction="OnTouches" getPressed="GetPressed" getEnabled="GetEnabled" supertip="Vis fysiske fingertryk. Genstarter kort den valgte forbindelse." />
+      <dropDown id="Orientation" label="Orientering" getSelectedItemIndex="GetOrientation" onAction="OnOrientation" getEnabled="GetEnabled">
+        <item id="Auto" label="Automatisk" /><item id="Landscape" label="Liggende" /><item id="Portrait" label="Stående" />
+      </dropDown>
+    </group>
+    <group id="Setup" label="Opsætning">
+      <button id="Settings" getImage="GetImage" label="Indstillinger" onAction="OnSettings" getEnabled="GetEnabled" />
+      <button id="Status" getImage="GetImage" label="Status" onAction="OnStatus" getEnabled="GetEnabled" />
+      <button id="Help" label="Hjælp og fejlfinding" size="large" getImage="GetImage" onAction="OnHelp" getEnabled="GetEnabled" supertip="Søg efter et problem og få trinvis dansk hjælp. Kan åbnes uden forbindelse og under opstart." />
+      <labelControl id="NotEmbedded" label="Eksternt livebillede" />
+    </group>
+  </tab></tabs></ribbon>
+</customUI>

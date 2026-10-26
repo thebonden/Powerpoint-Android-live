@@ -1,0 +1,19 @@
+<Project ToolsVersion="Current" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
+    <OutputType>Exe</OutputType><TargetFrameworkVersion>v4.8</TargetFrameworkVersion><LangVersion>7.3</LangVersion>
+    <AssemblyName>AndroidLive.Tests</AssemblyName><OutputPath>bin\$(Configuration)\</OutputPath>
+    <ProjectGuid>{2F48DAE6-734C-4698-9020-1C5637F6B02A}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup><Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"><Private>True</Private></Reference><Reference Include="System"/><Reference Include="System.Core"/><Reference Include="System.Xml"/><Reference Include="System.Drawing"/><Reference Include="System.Windows.Forms"/></ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs"/><Compile Include="BrandHelpTests.cs"/><Compile Include="..\..\src\AndroidLive\RibbonImages.cs"/><Compile Include="..\..\src\AndroidLive\BrandArtwork.cs"/><Compile Include="..\..\src\AndroidLive\HelpContent.cs"/><Compile Include="..\..\src\AndroidLive\HelpDialog.cs"/><Compile Include="FrameWaitingTests.cs"/><Compile Include="..\..\src\AndroidLive\WaitingWindow.cs"/><Compile Include="OfficeUiContextTests.cs"/><Compile Include="..\..\src\AndroidLive\OfficeUiContext.cs"/><Compile Include="ConnectionRecoveryTests.cs"/><Compile Include="LiveStartupProbe.cs"/><Compile Include="CompatibilityTests.cs"/><Compile Include="MultiDeviceTests.cs"/><Compile Include="DeviceDiscoveryTests.cs"/>
+    <Compile Include="ScrcpyDiscoveryTests.cs"/>
+    <Compile Include="ShadowCopyProbe.cs"/>
+    <Compile Include="..\..\src\AndroidLive.Core\*.cs"/>
+    <Compile Include="..\..\src\AndroidLive\NativeWindow.cs"/>
+    <Compile Include="..\..\src\AndroidLive\ScrcpySession.cs"/><Compile Include="..\..\src\AndroidLive\DeviceStreams.cs"/><Compile Include="..\..\src\AndroidLive\UserSettings.cs"/>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+</Project>
