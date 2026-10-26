@@ -1,9 +1,9 @@
-# Nem installation · Android Live 0.0.111
+# Nem installation · Android Live 0.0.113
 
-Del **Android-Live-0.0.111-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
+Del **Android-Live-0.0.113-Setup.exe** med hver bruger. Det er én samlet installationsfil. Der skal ikke pakkes ZIP-filer ud, vælges mapper eller installeres udviklingsværktøjer.
 
 1. Gem præsentationen, og luk PowerPoint.
-2. Dobbeltklik på **Android-Live-0.0.111-Setup.exe**.
+2. Dobbeltklik på **Android-Live-0.0.113-Setup.exe**.
 3. Klik **Installer / opdater**, og følg eventuelle Microsoft-vinduer.
 4. Når installationsprogrammet skriver **Færdig**, start PowerPoint normalt.
 
@@ -63,7 +63,7 @@ Enhedslisten tilhører pc'ens brugerprofil. Flytning af PPTX til en anden pc ove
 
 Programmet hedder **Android Live**. Organisationsnavnet er fjernet fra produktnavn, nye programfiler, namespaces, certifikatnavn og nye datamapper. Gamle identifikatorer findes kun i kompatibilitetskoden, så tidligere installerede udgaver, gemte tabletindstillinger og eksisterende slides kan migreres. Dine egne tablet-navne ændres ikke.
 
-Der er to leverancer: **Android-Live-0.0.111-Setup.exe** til almindelig installation og **Android-Live-0.0.111-IT.zip** til IT med samme EXE, lydløse kommandoer, detektion og vejledning.
+Der er to leverancer: **Android-Live-0.0.113-Setup.exe** til almindelig installation og **Android-Live-0.0.113-IT.zip** til IT med samme EXE, lydløse kommandoer, detektion og vejledning.
 ## Hele skærmen i rammen
 
 Android Live tilpasser automatisk hele Android-skærmen til tabletrammen og forhåndsvisningen. Billedet bevarer sine proportioner og bliver ikke beskåret eller strakt. Hvis rammen og enheden har forskellige formater, vises sorte kanter over/under eller ved siderne. Du kan frit gøre rammen bredere, smallere, større eller mindre. Tilpasningen følger også enhedens rotation.
@@ -94,3 +94,13 @@ Indtil opdateringen er installeret, kan **Forbind valgt** starte den gemte forbi
 I 0.0.111 dækker et tomt, mørkt felt redigeringsteksten, mens livebilledet mangler. **Både ikon og ventetekst er skjult de første 15 sekunder.** Derefter vises et tabletikon og “Venter på forbindelse til” med enhedsnavn og dit eget navn. Livebilledet vises, så snart det er klar; de 15 sekunder forsinker kun ventevisningen. Hver tablet har sin egen ventetid.
 
 Ved et nyt forbindelsesudfald starter de 15 sekunder forfra. Slidens gemte tekst ændres ikke. Ventefelt og video er eksterne vinduer, som følger slideshowet; animerede rammer og særlige overgange skal afprøves på den konkrete opsætning.
+### Rettelse i 0.0.112
+
+I 0.0.111 kunne den gamle tekst stadig ses under den korte opstart: ventefeltets Windows-vindue var markeret synligt, men formularens normale visning var ikke startet. 0.0.112 retter denne visning samt skjul/genvisning. Forsinkelsen er fortsat 15 sekunder for både ikon og ventetekst; livebilledet forsinkes ikke.
+## Logo, ikoner og hjælp i 0.0.113
+
+Knapperne i Android Live-fanen har nu ikoner. Vælg **Hjælp og fejlfinding** for at søge i den danske vejledning uden internet. **Status** åbner fanen med lokale kontroller og tekniske detaljer i det samme vindue. Kopiering til support sker kun, når du selv klikker; gennemse indholdet, før du deler det.
+
+Nye rammer indeholder tablet/Wi-Fi-logoet. På en gammel ramme: vælg den tilhørende tablet og klik **Indsæt / opdater ramme**. Det opdaterer rammens grafik og tekst, men bevarer placering, størrelse og enhedstilknytning. Tekst eller farver, du selv har ændret inde i rammen, bliver erstattet ved denne handling.
+
+Logoet i ventevisningen kommer først efter 15 sekunder uden livebillede. Rettelsen fra 0.0.112 er med. Se også [Hjælp og fejlfinding](HELP.md).

@@ -16,6 +16,7 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        if (args.Length == 2 && args[0] == "--render-brand-help") return BrandHelpTests.RenderSamples(args[1]);
         if (args.Length == 2 && args[0] == "--render-waiting") return FrameWaitingTests.RenderSamples(args[1]);
         if (args.Length > 0 && args[0] == "--probe-live-startup") return LiveStartupProbe.Run(args);
         if (args.Length > 0 && (args[0] == "--fake-mode" || args[0] == "--powerpoint" || args[0] == "-H")) return FakeWifi(args);
@@ -184,6 +185,7 @@ internal static class Program
         ConnectionRecoveryTests.Run(Test);
         OfficeUiContextTests.Run(Test);
         FrameWaitingTests.Run(Test);
+        BrandHelpTests.Run(Test);
         Test("QR helper resolves outside the actual CLR shadow-copy folder", ShadowCopyProbe.Test);
         Console.WriteLine("Tests: " + passed + " passed, " + failed + " failed.");
         return failed == 0 ? 0 : 1;

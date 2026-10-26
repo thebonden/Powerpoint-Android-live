@@ -6,9 +6,9 @@
     <AssemblyName>AndroidLive.Tests</AssemblyName><OutputPath>bin\$(Configuration)\</OutputPath>
     <ProjectGuid>{2F48DAE6-734C-4698-9020-1C5637F6B02A}</ProjectGuid>
   </PropertyGroup>
-  <ItemGroup><Reference Include="System"/><Reference Include="System.Core"/><Reference Include="System.Xml"/><Reference Include="System.Drawing"/><Reference Include="System.Windows.Forms"/></ItemGroup>
+  <ItemGroup><Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"><Private>True</Private></Reference><Reference Include="System"/><Reference Include="System.Core"/><Reference Include="System.Xml"/><Reference Include="System.Drawing"/><Reference Include="System.Windows.Forms"/></ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs"/><Compile Include="FrameWaitingTests.cs"/><Compile Include="..\..\src\AndroidLive\WaitingWindow.cs"/><Compile Include="OfficeUiContextTests.cs"/><Compile Include="..\..\src\AndroidLive\OfficeUiContext.cs"/><Compile Include="ConnectionRecoveryTests.cs"/><Compile Include="LiveStartupProbe.cs"/><Compile Include="CompatibilityTests.cs"/><Compile Include="MultiDeviceTests.cs"/><Compile Include="DeviceDiscoveryTests.cs"/>
+    <Compile Include="Program.cs"/><Compile Include="BrandHelpTests.cs"/><Compile Include="..\..\src\AndroidLive\RibbonImages.cs"/><Compile Include="..\..\src\AndroidLive\BrandArtwork.cs"/><Compile Include="..\..\src\AndroidLive\HelpContent.cs"/><Compile Include="..\..\src\AndroidLive\HelpDialog.cs"/><Compile Include="FrameWaitingTests.cs"/><Compile Include="..\..\src\AndroidLive\WaitingWindow.cs"/><Compile Include="OfficeUiContextTests.cs"/><Compile Include="..\..\src\AndroidLive\OfficeUiContext.cs"/><Compile Include="ConnectionRecoveryTests.cs"/><Compile Include="LiveStartupProbe.cs"/><Compile Include="CompatibilityTests.cs"/><Compile Include="MultiDeviceTests.cs"/><Compile Include="DeviceDiscoveryTests.cs"/>
     <Compile Include="ScrcpyDiscoveryTests.cs"/>
     <Compile Include="ShadowCopyProbe.cs"/>
     <Compile Include="..\..\src\AndroidLive.Core\*.cs"/>

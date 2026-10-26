@@ -65,12 +65,22 @@ internal static class FrameWaitingTests
             using(var host=new WaitingWindow())
             using(var cover=new WaitingWindow()) {
                 Check(host.Place(IntPtr.Zero,new Rectangle(-32000,-32000,600,400),false,"host"));
+                int loaded=0,shown=0;cover.Load+=(sender,args)=>loaded++;cover.Shown+=(sender,args)=>shown++;
                 handle=cover.Handle;
                 Check(cover.Place(host.Handle,new Rectangle(-32000,-32000,300,200),false,"Tablet"));
+                Application.DoEvents();
                 Check(NativeWindow.IsWindowVisible(handle));
+                if(!cover.Visible)throw new Exception("Native window shown but WinForms Visible is false");
+                Equal(1,loaded);Equal(1,shown);
                 Equal(before,GetForegroundWindow());
-                cover.Conceal();Check(!NativeWindow.IsWindowVisible(handle));
+                cover.Conceal();Check(!NativeWindow.IsWindowVisible(handle));Check(!cover.Visible);
                 Check(cover.Place(host.Handle,new Rectangle(-32000,-32000,200,300),true,"Tablet"));
+                Application.DoEvents();Check(cover.Visible);Check(cover.IndicatorVisible);
+                Equal(1,loaded);Equal(1,shown);
+                cover.Conceal();
+                Check(cover.Place(host.Handle,new Rectangle(-32000,-32000,300,200),false,"Tablet"));
+                Application.DoEvents();Check(cover.Visible);Check(!cover.IndicatorVisible);
+                Equal(1,loaded);Equal(1,shown);
                 Equal(before,GetForegroundWindow());
             }
             Check(!NativeWindow.IsWindow(handle));

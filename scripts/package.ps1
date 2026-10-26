@@ -21,6 +21,7 @@ foreach($required in @('setup.exe','AndroidLive.vsto','Application Files')){
     if(!(Test-Path (Join-Path $publish $required))){throw "Installer is incomplete: $required"}
 }
 Copy-Item (Join-Path $repo 'docs/INSTALLATION.md') (Join-Path $publish 'LAES-MIG.md')
+Copy-Item (Join-Path $repo 'docs/HELP.md') (Join-Path $publish 'HELP.md')
 $source=Join-Path $publish 'source'
 New-Item -ItemType Directory -Path $source | Out-Null
 Copy-Item (Join-Path $repo 'native') $source -Recurse

@@ -17,6 +17,9 @@ namespace AndroidLive
         private Office.IRibbonUI ribbon;
         private UserSettings settings = UserSettings.Load();
         private bool busy;
+        private readonly RibbonImages images = new RibbonImages();
+        public stdole.IPictureDisp GetImage(Office.IRibbonControl control) => images.Get(control.Id);
+        internal void DisposeImages() => images.Dispose();
         internal AndroidRibbon(ThisAddIn addIn){this.addIn=addIn;}
         public string GetCustomUI(string ribbonId)
         {
@@ -32,6 +35,7 @@ namespace AndroidLive
         internal void Refresh(){try{ribbon?.Invalidate();}catch(COMException){}}
         public bool GetEnabled(Office.IRibbonControl control)
         {
+            if(control.Id=="Help" || control.Id=="Brand")return true;
             var controller=addIn.Controller;if(controller==null)return false;
             if(control.Id=="StopAll")return controller.IsActive;
             if(control.Id=="StopAndroid")return controller.IsDeviceActive(settings.SelectedDeviceId);
@@ -170,10 +174,19 @@ namespace AndroidLive
         }
         public void OnSettings(Office.IRibbonControl control)
         {Run(()=>{using(var dialog=new SettingsDialog(settings))dialog.ShowDialog();addIn.Controller.SelectDevice(settings.Selected);});}
-        public void OnStatus(Office.IRibbonControl control)
-        {Run(()=>MessageBox.Show(addIn.Controller.Status+"\n\n"+addIn.Controller.Diagnostics+
-            "\n\n"+LiveAndroidController.Version+" · Udviklingsudgave. Livebilleder er eksterne vinduer og medtages ikke i PowerPoint-eksport.",
-            "Android Live status",MessageBoxButtons.OK,MessageBoxIcon.Information));}
+        public void OnHelp(Office.IRibbonControl control){ShowHelp(false);}
+        public void OnStatus(Office.IRibbonControl control){ShowHelp(true);}
+        private void ShowHelp(bool details)
+        {
+            using(var dialog=new HelpDialog(LiveAndroidController.Version,()=>
+                "Android Live "+LiveAndroidController.Version+"\n\n"+
+                HelpContent.LocalChecks(ScrcpyLocator.IsComplete(settings.ScrcpyPath),settings.Selected,
+                    addIn.Controller?.OverlayEnabled??false,
+                    addIn.Controller?.DeviceStateForHelp(settings.SelectedDeviceId)??DeviceState.Stopped)+
+                "\n\nSTATUS\n"+(addIn.Controller?.Status??"Tilføjelsesprogrammet er ved at starte.")+
+                "\n\nDETALJER TIL SUPPORT\n"+(addIn.Controller?.Diagnostics??"Ingen detaljer endnu."),details))
+                dialog.ShowDialog();
+        }
         private void Run(Action action)
         {
             try{if(addIn.Controller!=null)action();}

@@ -16,7 +16,7 @@ namespace AndroidLive
     /// <summary>Independent external windows per device; all Office access stays on the STA.</summary>
     public sealed class LiveAndroidController : IDisposable
     {
-        public const string Version = "0.0.111";
+        public const string Version = "0.0.113";
         public const string AnchorName = SlideIdentity.Name;
         private const string DeviceTag = SlideIdentity.Tag;
         private readonly PowerPoint.Application app;
@@ -66,6 +66,7 @@ namespace AndroidLive
         {
             EnsureThread(); streams.Start("legacy",executable,serial,false,false,null); enabled=true; Changed();
         }
+        internal DeviceState DeviceStateForHelp(string id) => streams.Get(id)?.Status.State ?? DeviceState.Stopped;
         internal IntPtr VideoWindow(string id) => streams.Get(id)?.Window ?? IntPtr.Zero;
         internal void SelectDevice(DeviceProfile profile)
         {
@@ -197,11 +198,28 @@ namespace AndroidLive
         private static void WriteAnchorCaption(PowerPoint.Shape shape,DeviceProfile device)
         {
             PowerPoint.TextFrame text=null; PowerPoint.TextRange range=null;
+            PowerPoint.FillFormat fill=null; PowerPoint.Font font=null; PowerPoint.ColorFormat color=null;
+            PowerPoint.ParagraphFormat paragraph=null;
+            string artwork=Path.Combine(Path.GetTempPath(),"AndroidLive-frame-"+Guid.NewGuid().ToString("N")+".png");
             try {
                 shape.AlternativeText="Live tablet: "+device.ListLabel+". Eksternt vindue; medtages ikke i PowerPoint-eksport.";
                 text=shape.TextFrame;range=text.TextRange;
+                using(var bitmap=BrandArtwork.Frame(shape.Width,shape.Height))bitmap.Save(artwork,System.Drawing.Imaging.ImageFormat.Png);
+                fill=shape.Fill;fill.UserPicture(artwork);
+                text.MarginTop=shape.Height*.43f;text.MarginBottom=shape.Height*.06f;
+                text.MarginLeft=shape.Width*.05f;text.MarginRight=shape.Width*.05f;
+                text.VerticalAnchor=Office.MsoVerticalAnchor.msoAnchorMiddle;
+                text.WordWrap=Office.MsoTriState.msoTrue;
+                var fit=shape.TextFrame2;
+                try {fit.AutoSize=Office.MsoAutoSize.msoAutoSizeTextToFitShape;} finally {Release(fit);}
                 range.Text="Livebillede fra "+device.ListLabel+"\nunder slideshow";
-            } finally {Release(range);Release(text);}
+                font=range.Font;font.Size=Math.Max(8,Math.Min(20,shape.Height*.065f));
+                color=font.Color;color.RGB=0xFFFFFF;
+                paragraph=range.ParagraphFormat;paragraph.Alignment=PowerPoint.PpParagraphAlignment.ppAlignCenter;
+            } finally {
+                Release(paragraph);Release(color);Release(font);Release(fill);Release(range);Release(text);
+                try {if(File.Exists(artwork))File.Delete(artwork);} catch(IOException){} catch(UnauthorizedAccessException){}
+            }
         }
         private static string MarkerDevice(PowerPoint.Shape shape)
         {

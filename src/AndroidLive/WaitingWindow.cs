@@ -39,8 +39,17 @@ namespace AndroidLive
         internal bool Place(IntPtr host, Rectangle bounds, bool showIndicator, string deviceLabel)
         {
             SetContent(showIndicator, deviceLabel);
+            // SetWindowPos(SHOWWINDOW) alone does not set WinForms' managed Visible
+            // state or run Load/Shown. Such an HWND reports visible but does not paint.
+            // Use the Form lifecycle first, without activation, then enforce owner/z-order.
+            Bounds = bounds;
+            if (!Visible) {
+                if (host == IntPtr.Zero) Show();
+                else Show(new OwnerWindow(host));
+            }
             bool placed = NativeWindow.Place(Handle, host, bounds);
             if (placed) Update();
+            else Conceal();
             return placed;
         }
         internal void SetContent(bool showIndicator, string deviceLabel)
@@ -52,7 +61,12 @@ namespace AndroidLive
         internal void Conceal()
         {
             if (!IsHandleCreated) return;
-            NativeWindow.Hide(Handle); NativeWindow.DetachOwner(Handle);
+            Hide(); NativeWindow.DetachOwner(Handle);
+        }
+        private sealed class OwnerWindow : IWin32Window
+        {
+            public IntPtr Handle { get; }
+            internal OwnerWindow(IntPtr handle) { Handle = handle; }
         }
         protected override void OnPaint(PaintEventArgs e)
         {
@@ -62,14 +76,7 @@ namespace AndroidLive
             g.SmoothingMode = SmoothingMode.AntiAlias;
             float scale = Math.Max(.35f, Math.Min(2f, Math.Min(ClientSize.Width / 400f, ClientSize.Height / 250f)));
             float cx = ClientSize.Width / 2f, top = ClientSize.Height * .18f;
-            using (var pen = new Pen(Color.FromArgb(189, 211, 225), 2.5f * scale))
-            {
-                // Native vector tablet and Wi-Fi mark: no external assets or brand logo.
-                g.DrawRectangle(pen, cx - 20 * scale, top, 40 * scale, 52 * scale);
-                g.DrawLine(pen, cx - 4 * scale, top + 45 * scale, cx + 4 * scale, top + 45 * scale);
-                g.DrawArc(pen, cx + 9 * scale, top - 15 * scale, 34 * scale, 28 * scale, 220, 100);
-                g.DrawArc(pen, cx + 16 * scale, top - 8 * scale, 20 * scale, 17 * scale, 220, 100);
-            }
+            BrandArtwork.Draw(g,new RectangleF(cx-32*scale,top-7*scale,64*scale,64*scale),Color.FromArgb(189,211,225));
             float textTop = top + 68 * scale;
             var rect = new RectangleF(12 * scale, textTop, ClientSize.Width - 24 * scale,
                 Math.Max(1, ClientSize.Height - textTop - 10 * scale));

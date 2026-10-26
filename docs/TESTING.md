@@ -1,5 +1,23 @@
-# Validation — development version 0.0.111
+# Validation — development version 0.0.113
 
+## Brand and offline help — 2026-10-26
+
+- Shared native vector drawing supplies ribbon IPictureDisp images, an explicit insert/update frame picture fill, and the delayed waiting logo.
+- Frame refresh retains its existing rectangle and routing tags. Picture-fill file is temporary and removed after Office reads it; all changes are confined to the explicit frame update action. Captions remain editable, with text-to-fit enabled.
+- Add searchable Danish offline guidance and read-only local checks/status. Help and brand buttons remain enabled before controller startup and while busy. No connection or network check is initiated by opening help; support-copy is explicit and no upload is performed.
+- Local managed validation: **88 test groups passed**, including the .112 regression. Package/installer checks are run with the final distribution.
+- Tests cover icon transparency/rendering at 16/32/64 px, real Office picture conversion/reuse, frame aspect/caption space, absent/stopped/running device advice, actual help search/no-results recovery and provider failure.
+- The .112 lifecycle regression (managed/native Visible, Load/Shown, hide/re-show and focus) remains included.
+- Rendered and inspected icon sheet, frame artwork, waiting surface and the help window in an isolated nonactivating preview. No installed add-in or user presentation was modified during this development turn.
+- Remaining installed acceptance: ribbon callback loading in PowerPoint, frame fill persistence after save/reopen and temp-file deletion, both names at various frame sizes, help keyboard navigation/high-DPI scaling, status refresh/copy, and the two-second video-start blank-cover regression.
+## Waiting surface lifecycle correction — 2026-10-25
+
+- User reported the editor caption still appeared before video arrived after about two seconds. Read-only registration inspection confirmed 0.0.111 installed.
+- A strengthened real-window regression fails against .111: native IsWindowVisible returns true while Form.Visible is false, Load/Shown were skipped and the test observed no paint calls. The old bitmap-render test bypassed this lifecycle problem.
+- Use nonactivating Form.Show with the slideshow owner before native placement, and Form.Hide before detaching. Initial bounds/content are set before Show. Keep existing foreground/geometry/transition guards.
+- Regression now requires managed and native visibility, exactly one Load/Shown, hide/re-show and blank/indicator reuse without changing foreground. Existing pixel tests continue to verify blank versus waiting rendering and the 15-second timer tests remain unchanged.
+- UI inspection started and exited the user's slideshow and returned to the previously selected slide. No presentation content was edited/saved and no installer, pairing or registration change was performed.
+- Installed .112 acceptance remains pending: confirm no caption during the two-second start, waiting content only after 15 seconds when offline, and correct hide/re-show on navigation and blackout. Animated transitions remain subject to the external-overlay limitation below.
 ## Delayed waiting surface — 2026-10-25
 
 - The user confirmed 0.0.110 works, then requested no initial icon or text: both should appear only after 15 seconds without video.

@@ -19,9 +19,10 @@ namespace AndroidLive
         private void OnStatusChanged(object sender, EventArgs e) { ribbon?.Refresh(); }
         private void ThisAddIn_Shutdown(object sender, EventArgs e)
         {
-            if (Controller == null) return;
+            if (Controller == null) {ribbon?.DisposeImages();return;}
             Controller.StatusChanged -= OnStatusChanged;
             Controller.Dispose(); Controller = null;
+            ribbon?.DisposeImages();
         }
         private void InternalStartup()
         {

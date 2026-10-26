@@ -1,5 +1,19 @@
 # Changes
 
+## 0.0.113 — 2026-10-26 (development)
+
+- Add a common tablet/Wi-Fi logo and action icons to the Android Live ribbon.
+- Put the shared logo into new/explicitly updated slide frames while retaining editable names, rectangle geometry and device routing. Existing slides are not silently restyled.
+- Use the shared logo in the waiting surface only after the existing 15-second delay; include the .112 native/managed window lifecycle fix.
+- Add searchable offline Danish help with symptom-based guides, teaching-day preparation, installation and export limitations.
+- Replace the compact Status message box with read-only local checks and details in Help; allow explicit refresh and copying without automatic upload.
+- Keep Help available during connection startup and add artwork, Office image conversion, search and status tests.
+## 0.0.112 — 2026-10-25 (development)
+
+- Fix a blank-cover lifecycle error in .111: native window visibility alone did not start WinForms visibility/Load/Shown, leaving the editor caption exposed.
+- Show the cover through the nonactivating Form lifecycle with its slideshow owner, then apply native placement. Hide through the matching Form lifecycle before detaching.
+- Extend the real-window regression to require managed visibility and Load/Shown across hide/re-show, as well as no foreground change. The stronger assertion fails on .111.
+- Keep the 15-second text/icon delay and immediate ready-video behavior unchanged.
 ## 0.0.111 — 2026-10-25 (development)
 
 - Show a plain dark cover while a slideshow frame has no live video; delay BOTH the waiting text and tablet/Wi-Fi icon by 15 seconds.
